@@ -27,6 +27,61 @@ html, body {
   to   { opacity: 1; }
 }
 
+/* ── Notice Popup ──────────────────────────────────── */
+
+#notice-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(4, 4, 8, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.5s ease-out;
+}
+
+#notice-overlay.hidden {
+  display: none;
+}
+
+#notice-box {
+  background: rgba(12, 12, 24, 0.95);
+  border: 1px solid rgba(85, 136, 255, 0.3);
+  border-radius: 14px;
+  padding: 36px 44px;
+  text-align: center;
+  max-width: 420px;
+  box-shadow: 0 0 40px rgba(85, 136, 255, 0.1);
+}
+
+#notice-box p {
+  color: #ccccd8;
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1.6;
+  letter-spacing: 0.5px;
+  margin-bottom: 24px;
+}
+
+#notice-dismiss {
+  background: rgba(85, 136, 255, 0.15);
+  border: 1px solid rgba(85, 136, 255, 0.4);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  padding: 10px 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+#notice-dismiss:hover {
+  background: rgba(85, 136, 255, 0.3);
+  border-color: #5588ff;
+  box-shadow: 0 0 16px rgba(85, 136, 255, 0.25);
+}
+
 /* ── UI Overlay ─────────────────────────────────────── */
 
 #ui {

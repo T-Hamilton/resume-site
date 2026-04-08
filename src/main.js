@@ -5,6 +5,14 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 /* ═══════════════════════════════════════════════════════
+   NOTICE POPUP
+   ═══════════════════════════════════════════════════════ */
+
+document.getElementById('notice-dismiss').addEventListener('click', () => {
+  document.getElementById('notice-overlay').classList.add('hidden');
+});
+
+/* ═══════════════════════════════════════════════════════
    CONFIG
    ═══════════════════════════════════════════════════════ */
 
