@@ -32,14 +32,22 @@ header {
 #back {
   position: absolute;
   left: 32px;
-  color: #5588ff;
+  color: #ffffff;
   text-decoration: none;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 600;
   letter-spacing: 2px;
-  opacity: 0.6;
-  transition: opacity 0.3s;
+  padding: 8px 20px;
+  border: 1px solid rgba(85, 136, 255, 0.5);
+  border-radius: 8px;
+  background: rgba(85, 136, 255, 0.12);
+  transition: all 0.3s;
 }
-#back:hover { opacity: 1; }
+#back:hover {
+  background: rgba(85, 136, 255, 0.3);
+  border-color: #5588ff;
+  box-shadow: 0 0 16px rgba(85, 136, 255, 0.25);
+}
 
 header h1 {
   font-size: 18px;
@@ -215,8 +223,10 @@ header h1 {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-scrollbar-width: thin;
-scrollbar-color: #333 transparent;
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #333 transparent;
+}
 
 /* Responsive */
 @media (max-width: 768px) {

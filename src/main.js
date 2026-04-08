@@ -28,6 +28,17 @@ const TITLE_FRAC     = TITLE_HEIGHT / TOTAL_TRAVEL;
 
 const SECTIONS = [
   {
+    title: 'DASHBOARD',
+    body: [
+      'Live career metrics',
+      'powered by Supabase',
+      '',
+      'Click to explore  \u25B6',
+    ],
+    accent: '#44ffdd',
+    link: '/dashboard.html',
+  },
+  {
     title: 'GEO HAMILTON',
     body: [
       'Built my career by creating roles',
@@ -71,7 +82,7 @@ const SECTIONS = [
     accent: '#ffaa44',
   },
   {
-    title: 'PWC LONDON',
+    title: 'PWC LONDON / PANDERA',
     body: [
       'Solutions Partner & Cloud Architect',
       'Pandera Systems · 2018 – 2022',
@@ -100,17 +111,6 @@ const SECTIONS = [
       'surgery for remote villages (2012)',
     ],
     accent: '#ff44aa',
-  },
-  {
-    title: 'DASHBOARD',
-    body: [
-      'Live career metrics',
-      'powered by Supabase',
-      '',
-      'Click to explore  \u25B6',
-    ],
-    accent: '#44ffdd',
-    link: '/dashboard.html',
   },
 ];
 
@@ -302,10 +302,10 @@ const titleRing = new THREE.Mesh(
   new THREE.MeshStandardMaterial({
     color: 0x5588ff,
     emissive: 0x3366dd,
-    emissiveIntensity: 2.0,
+    emissiveIntensity: 3.0,
   })
 );
-titleRing.position.set(-5.1, 0.05, 0.06);
+titleRing.position.set(-5.26, 0, 0.1);
 titleGroup.add(titleRing);
 
 // Outer decorative ring
@@ -314,9 +314,9 @@ const titleRing2 = new THREE.Mesh(
   new THREE.MeshStandardMaterial({
     color: 0x44ddaa,
     emissive: 0x22aa77,
-    emissiveIntensity: 1.5,
+    emissiveIntensity: 2.25,
     transparent: true,
-    opacity: 0.4,
+    opacity: 0.6,
   })
 );
 titleRing2.position.copy(titleRing.position);
@@ -385,7 +385,7 @@ function buildTitleCanvas(photo) {
   // Subtitle
   ctx.font = '300 70px system-ui, -apple-system, sans-serif';
   ctx.fillStyle = '#7777aa';
-  ctx.fillText('an interactive resume', 600, 620);
+  ctx.fillText('an interactive resum\u00e9', 600, 620);
 
   const tex = new THREE.CanvasTexture(cvs);
   tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -409,6 +409,7 @@ function createTitleMesh(tex) {
   });
   const mesh = new THREE.Mesh(geo, mat);
   mesh.userData.isTitlePlane = true;
+  mesh.position.z = 0.15;
   titleGroup.add(mesh);
 }
 
@@ -562,11 +563,66 @@ function makeTexture(section) {
     ctx.textAlign = 'center'; // reset
   } else {
     const bodyH = section.body.length * 40;
-    const areaTop = 110, areaBot = H - 20;
+    const areaTop = 110;
+    const areaBot = section.link ? 320 : H - 20;
     const bodyY = areaTop + (areaBot - areaTop - bodyH) / 2 + 40;
     section.body.forEach((line, i) => {
       ctx.fillText(line, W / 2, bodyY + i * 40);
     });
+  }
+
+  // Mini chart preview for dashboard screen
+  if (section.link) {
+    const chartX = 80, chartW = W - 160, chartY = 340, chartH = 200;
+    const bars = [
+      { label: 'AWS', val: 13, color: '#5588ff' },
+      { label: 'MSTR', val: 13, color: '#44ddaa' },
+      { label: 'Python', val: 13, color: '#ffaa44' },
+      { label: 'Looker', val: 8, color: '#aa66ff' },
+      { label: 'IAM', val: 8, color: '#ff44aa' },
+      { label: 'AI', val: 1, color: '#ff6644' },
+    ];
+    const maxVal = 13;
+    const gap = 12;
+    const barWidth = (chartW - gap * (bars.length - 1)) / bars.length;
+
+    // Faint grid lines
+    ctx.strokeStyle = 'rgba(85, 136, 255, 0.08)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 3; i++) {
+      const gy = chartY + chartH - (i / 3) * chartH;
+      ctx.beginPath();
+      ctx.moveTo(chartX, gy);
+      ctx.lineTo(chartX + chartW, gy);
+      ctx.stroke();
+    }
+
+    bars.forEach((b, i) => {
+      const bx = chartX + i * (barWidth + gap);
+      const bh = (b.val / maxVal) * (chartH - 20);
+      const by = chartY + chartH - bh;
+
+      ctx.fillStyle = b.color + '88';
+      ctx.beginPath();
+      ctx.roundRect(bx, by, barWidth, bh, 3);
+      ctx.fill();
+
+      ctx.strokeStyle = b.color;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(bx, by, barWidth, bh, 3);
+      ctx.stroke();
+
+      ctx.font = '300 14px system-ui, -apple-system, sans-serif';
+      ctx.fillStyle = '#667788';
+      ctx.textAlign = 'center';
+      ctx.fillText(b.label, bx + barWidth / 2, chartY + chartH + 18);
+    });
+
+    ctx.font = '300 14px system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = '#44ddaa';
+    ctx.textAlign = 'center';
+    ctx.fillText('LIVE FROM SUPABASE', W / 2, chartY + chartH + 50);
   }
 
   const tex = new THREE.CanvasTexture(cvs);
@@ -615,10 +671,22 @@ SECTIONS.forEach((section, i) => {
   screens.push({ mesh, angle, y, t, section });
 });
 
-// Make dashboard screen clickable — open /dashboard.html
-window.addEventListener('click', () => {
-  if (scrollCurrent > 0.9) {
-    window.location.href = '/dashboard.html';
+// Make dashboard screen clickable — raycast against mesh
+const clickRaycaster = new THREE.Raycaster();
+const clickNDC = new THREE.Vector2();
+window.addEventListener('click', (e) => {
+  clickNDC.x = (e.clientX / window.innerWidth) * 2 - 1;
+  clickNDC.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  clickRaycaster.setFromCamera(clickNDC, camera);
+  const linkMeshes = screens
+    .filter((_, i) => SECTIONS[i].link)
+    .map(s => s.mesh);
+  const hits = clickRaycaster.intersectObjects(linkMeshes);
+  if (hits.length > 0) {
+    const idx = screens.findIndex(s => s.mesh === hits[0].object);
+    if (idx >= 0 && SECTIONS[idx].link) {
+      window.location.href = SECTIONS[idx].link;
+    }
   }
 });
 
@@ -1147,7 +1215,12 @@ function animate() {
   titleRing.rotation.z  = time * 0.25;
   titleRing2.rotation.z = -time * 0.15;
 
-  // ── Background G spin (scroll-driven + idle) ──
+  // ── Background G: follow camera Y during title zone, then stay ──
+  if (scrollCurrent <= TITLE_FRAC) {
+    bgGGroup.position.y = camY;
+  } else {
+    bgGGroup.position.y = (TOTAL_HEIGHT / 2 + TITLE_HEIGHT) - TITLE_FRAC * TOTAL_TRAVEL;
+  }
   const scrollSpin = Math.min(scrollCurrent / TITLE_FRAC, 1) * Math.PI * 6;
   bgGGroup.rotation.y = time * 0.08 + scrollSpin;
 
