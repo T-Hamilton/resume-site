@@ -1,0 +1,226 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  background: #040408;
+  color: #ccccd8;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* Particle background */
+#particles {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+#particles canvas { display: block; }
+
+/* Layout */
+header, section { position: relative; z-index: 1; }
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 28px 32px 20px;
+  border-bottom: 1px solid rgba(85, 136, 255, 0.12);
+}
+
+#back {
+  position: absolute;
+  left: 32px;
+  color: #5588ff;
+  text-decoration: none;
+  font-size: 13px;
+  letter-spacing: 2px;
+  opacity: 0.6;
+  transition: opacity 0.3s;
+}
+#back:hover { opacity: 1; }
+
+header h1 {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 6px;
+  color: #ffffff;
+}
+
+#live-tag {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: #44ddaa;
+  border: 1px solid rgba(68, 221, 170, 0.3);
+  padding: 3px 10px;
+  border-radius: 20px;
+  animation: livePulse 2s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Metric cards */
+#cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 28px 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.card {
+  background: rgba(12, 12, 24, 0.85);
+  border: 1px solid rgba(85, 136, 255, 0.12);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.card:hover {
+  border-color: rgba(85, 136, 255, 0.35);
+  box-shadow: 0 0 20px rgba(85, 136, 255, 0.08);
+}
+
+.card .value {
+  font-size: 38px;
+  font-weight: 700;
+  color: #5588ff;
+  margin-bottom: 6px;
+}
+
+.card .label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #667788;
+}
+
+/* Charts row */
+#charts {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 16px;
+  padding: 0 32px 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.chart-box {
+  background: rgba(12, 12, 24, 0.85);
+  border: 1px solid rgba(85, 136, 255, 0.12);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.chart-box h2 {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  color: #667788;
+  margin-bottom: 16px;
+}
+
+#bar-filter {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  background: rgba(85, 136, 255, 0.08);
+  border: 1px solid rgba(85, 136, 255, 0.15);
+  border-radius: 16px;
+  padding: 4px 14px;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #8888aa;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.filter-btn:hover, .filter-btn.active {
+  background: rgba(85, 136, 255, 0.2);
+  border-color: #5588ff;
+  color: #ffffff;
+}
+
+/* Table */
+#table-section {
+  padding: 0 32px 48px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+#table-section h2 {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  color: #667788;
+  margin-bottom: 14px;
+}
+
+#projects-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(12, 12, 24, 0.85);
+  border: 1px solid rgba(85, 136, 255, 0.12);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+#projects-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  color: #5588ff;
+  border-bottom: 1px solid rgba(85, 136, 255, 0.12);
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+}
+#projects-table th:hover { color: #88bbff; }
+#projects-table th.sorted-asc::after { content: ' \25B2'; font-size: 9px; }
+#projects-table th.sorted-desc::after { content: ' \25BC'; font-size: 9px; }
+
+#projects-table td {
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #bbbbc8;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+#projects-table tr:hover td {
+  background: rgba(85, 136, 255, 0.04);
+}
+
+#projects-table .type-tag {
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(85, 136, 255, 0.1);
+  color: #5588ff;
+  border: 1px solid rgba(85, 136, 255, 0.2);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+scrollbar-width: thin;
+scrollbar-color: #333 transparent;
+
+/* Responsive */
+@media (max-width: 768px) {
+  #cards { grid-template-columns: repeat(2, 1fr); }
+  #charts { grid-template-columns: 1fr; }
+  header h1 { font-size: 14px; letter-spacing: 4px; }
+}

@@ -41,52 +41,32 @@ const SECTIONS = [
     accent: '#5588ff',
   },
   {
-    title: 'ABOUT',
-    body: [
-      'Cloud/Data architect: MicroStrategy,',
-      'Power BI, Looker, AWS, GCP.',
-      '',
-      'Built "OpenClaw" — Claude-based AI',
-      'agent for real-world delivery.',
-      'Known for bridging teams &',
-      'creating roles that didn\'t exist.',
-    ],
-    accent: '#44ddaa',
-  },
-  {
     title: 'SKILLS',
     body: [
-      'Agentic AI · Claude · LLM Workflows',
-      'Linux · Docker · Kubernetes',
-      'AWS · GCP · Snowflake · PostgreSQL',
-      'MicroStrategy · Power BI · Looker',
-      'Python · Java · SQL · SAS',
-      'SSO · OpenAM · OAuth · Jira',
+      ['Agentic AI · Claude Code · LLM Workflows', ''],
+      [],
+      ['Full Stack Cloud/Data Architecture', '13 yrs'],
+      ['AWS · GCP · Snowflake · PostgreSQL', '13 yrs'],
+      ['MicroStrategy · Power BI · Looker', '13 yrs'],
+      ['Python · Java · SQL · SAS', '13 yrs'],
+      ['Linux · SSO · OpenAM · OAuth', '13 yrs'],
+      ['Jira · Confluence', '13 yrs'],
+      ['IAM · RBAC · Data Governance', '8 yrs'],
     ],
-    accent: '#ff6644',
+    accent: '#44ddaa',
+    grid: true,
   },
   {
-    title: 'OPENCLAW',
-    body: [
-      'Claude-based AI Agent System',
-      '',
-      'Context mgmt, tool orchestration,',
-      'repeatable workflows for tech ops.',
-      'Human-in-the-loop reliability.',
-      'Automation, reporting, analysis.',
-    ],
-    accent: '#aa66ff',
-  },
-  {
-    title: 'CHARTER',
+    title: 'CHARTER & DATAFACT Z',
     body: [
       'Solutions Partner & Cloud Architect',
-      'Datafact Z · Oct 2021 – Present',
+      'Oct 2021 – Present · Maui, FL, Remote',
       '',
-      'Led MSTR → PowerBI migration,',
+      'Led MSTR → PowerBI migration for',
       'Fortune 100 client, team of 12.',
-      'AWS end-to-end. 4000+ daily users.',
-      '3 renewed SLAs + 1 new project.',
+      'AWS end-to-end · Snowflake · Postgres.',
+      '2 BI platforms deployed, 4000+ daily.',
+      'Admin/Architect: MSTR, Looker, Tableau, Alteryx.',
     ],
     accent: '#ffaa44',
   },
@@ -114,22 +94,23 @@ const SECTIONS = [
       '',
       'Cox Comms · Soft Eng 1 · 2013–16',
       '  Created my own role. C-suite BI.',
-    ],
-    accent: '#ff44aa',
-  },
-  {
-    title: 'CONTACT',
-    body: [
-      'tim.d.hamilton@gmail.com',
-      '678.689.3330',
-      '',
-      'Maui, HI · Miami · Remote',
       '',
       'Humanitarian: medical ship team',
       'Australia & PNG — cataract',
       'surgery for remote villages (2012)',
     ],
+    accent: '#ff44aa',
+  },
+  {
+    title: 'DASHBOARD',
+    body: [
+      'Live career metrics',
+      'powered by Supabase',
+      '',
+      'Click to explore  \u25B6',
+    ],
     accent: '#44ffdd',
+    link: '/dashboard.html',
   },
 ];
 
@@ -404,7 +385,7 @@ function buildTitleCanvas(photo) {
   // Subtitle
   ctx.font = '300 70px system-ui, -apple-system, sans-serif';
   ctx.fillStyle = '#7777aa';
-  ctx.fillText('a resume', 600, 620);
+  ctx.fillText('an interactive resume', 600, 620);
 
   const tex = new THREE.CanvasTexture(cvs);
   tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -565,9 +546,28 @@ function makeTexture(section) {
   // Body
   ctx.font = '300 26px system-ui, -apple-system, sans-serif';
   ctx.fillStyle = '#bbbbc8';
-  section.body.forEach((line, i) => {
-    ctx.fillText(line, W / 2, 134 + i * 40);
-  });
+  if (section.grid) {
+    const padL = 120, padR = 120;
+    section.body.forEach((row, i) => {
+      if (row.length === 0) return; // empty row = spacer
+      ctx.textAlign = 'left';
+      ctx.fillText(row[0], padL, 134 + i * 40);
+      if (row[1]) {
+        ctx.textAlign = 'right';
+        ctx.fillStyle = section.accent;
+        ctx.fillText(row[1], W - padR, 134 + i * 40);
+        ctx.fillStyle = '#bbbbc8';
+      }
+    });
+    ctx.textAlign = 'center'; // reset
+  } else {
+    const bodyH = section.body.length * 40;
+    const areaTop = 110, areaBot = H - 20;
+    const bodyY = areaTop + (areaBot - areaTop - bodyH) / 2 + 40;
+    section.body.forEach((line, i) => {
+      ctx.fillText(line, W / 2, bodyY + i * 40);
+    });
+  }
 
   const tex = new THREE.CanvasTexture(cvs);
   tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -601,12 +601,25 @@ SECTIONS.forEach((section, i) => {
   const x = HELIX_RADIUS * Math.cos(angle);
   const z = HELIX_RADIUS * Math.sin(angle);
 
-  mesh.position.set(x, y, z);
+  // Push screen slightly outward so the helix rail doesn't cut through text
+  const outward = 0.35;
+  mesh.position.set(
+    x + outward * Math.cos(angle),
+    y,
+    z + outward * Math.sin(angle)
+  );
   mesh.lookAt(0, y, 0);
   mesh.rotateY(Math.PI); // flip so text faces outward toward camera
 
   scene.add(mesh);
-  screens.push({ mesh, angle, y, t });
+  screens.push({ mesh, angle, y, t, section });
+});
+
+// Make dashboard screen clickable — open /dashboard.html
+window.addEventListener('click', () => {
+  if (scrollCurrent > 0.9) {
+    window.location.href = '/dashboard.html';
+  }
 });
 
 /* ═══════════════════════════════════════════════════════
@@ -867,10 +880,27 @@ for (let i = 0; i < SMALL_ORB_COUNT; i++) {
 
 let scrollTarget = 0;
 let scrollCurrent = 0;
+let lastScrollTime = 0;
+
+// Snap points: title (0) + each screen in helix zone
+const snapPoints = [0];
+for (let i = 0; i < NUM_SCREENS; i++) {
+  snapPoints.push(TITLE_FRAC + (i / (NUM_SCREENS - 1)) * (1 - TITLE_FRAC));
+}
+
+function nearestSnap(val) {
+  let best = snapPoints[0], bestD = Math.abs(val - best);
+  for (let i = 1; i < snapPoints.length; i++) {
+    const d = Math.abs(val - snapPoints[i]);
+    if (d < bestD) { bestD = d; best = snapPoints[i]; }
+  }
+  return best;
+}
 
 window.addEventListener('wheel', (e) => {
   scrollTarget += e.deltaY * SCROLL_SENS;
   scrollTarget = Math.max(0, Math.min(1, scrollTarget));
+  lastScrollTime = performance.now();
 }, { passive: true });
 
 let touchY = 0;
@@ -882,6 +912,7 @@ window.addEventListener('touchmove', (e) => {
   touchY = e.touches[0].clientY;
   scrollTarget += dy * 0.002;
   scrollTarget = Math.max(0, Math.min(1, scrollTarget));
+  lastScrollTime = performance.now();
 }, { passive: true });
 
 /* ═══════════════════════════════════════════════════════
@@ -1082,6 +1113,13 @@ spine.children.forEach((child) => {
 function animate() {
   requestAnimationFrame(animate);
   const time = performance.now() * 0.001;
+
+  // Soft snap: after scrolling stops, gently pull toward nearest screen
+  const idleMs = performance.now() - lastScrollTime;
+  if (idleMs > 300) {
+    const snap = nearestSnap(scrollTarget);
+    scrollTarget += (snap - scrollTarget) * 0.04;
+  }
 
   // Smooth-scroll interpolation
   scrollCurrent += (scrollTarget - scrollCurrent) * LERP_SPEED;

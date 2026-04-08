@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Geo Hamilton</title>
+  <link rel="stylesheet" href="/src/dashboard.css" />
+</head>
+<body>
+  <div id="particles"></div>
+  <header>
+    <a href="/" id="back">&#x25C0; Resume</a>
+    <h1>CAREER DASHBOARD</h1>
+    <span id="live-tag">LIVE DATA</span>
+  </header>
+
+  <section id="cards"></section>
+
+  <section id="charts">
+    <div class="chart-box" id="bar-box">
+      <h2>SKILLS &mdash; YEARS OF EXPERIENCE</h2>
+      <div id="bar-filter"></div>
+      <canvas id="barChart"></canvas>
+    </div>
+    <div class="chart-box" id="donut-box">
+      <h2>WORK BREAKDOWN</h2>
+      <canvas id="donutChart"></canvas>
+    </div>
+  </section>
+
+  <section id="table-section">
+    <h2>PROJECT HISTORY</h2>
+    <table id="projects-table">
+      <thead>
+        <tr>
+          <th data-col="project">Project</th>
+          <th data-col="client">Client</th>
+          <th data-col="role">Role</th>
+          <th data-col="year_start">Year</th>
+          <th data-col="type">Type</th>
+          <th data-col="impact">Impact</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <script type="module" src="/src/dashboard.js"></script>
+</body>
+</html>
