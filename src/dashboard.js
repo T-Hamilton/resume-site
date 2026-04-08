@@ -2,8 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 import Chart from 'chart.js/auto';
 
 const supabase = createClient(
-  'https://llcjdelhijxpgkcwhbfi.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxsY2pkZWxoaWp4cGdrY3doYmZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2MDQzMzEsImV4cCI6MjA4OTE4MDMzMX0.6bgnu7uWsv8JtmXwR0VJm8_W5BGo6YwY3Sjdfj8-p0o'
+  'https://owgzrwfdmtiaenbumyzo.supabase.co',
+  'sb_publishable_QyRLOovp0cNH1age1QTcuQ_yiMOXhnJ'
 );
 
 /* ── Particle background ────────────────────────────── */
@@ -261,14 +261,23 @@ async function init() {
     data.forEach(p => {
       const tr = document.createElement('tr');
       const yearStr = p.year_end ? `${p.year_start}–${p.year_end}` : `${p.year_start}–Present`;
-      tr.innerHTML = `
-        <td>${p.project}</td>
-        <td>${p.client}</td>
-        <td>${p.role}</td>
-        <td>${yearStr}</td>
-        <td><span class="type-tag">${p.type}</span></td>
-        <td>${p.impact || '—'}</td>
-      `;
+      const fields = [p.project, p.client, p.role, yearStr];
+      fields.forEach(val => {
+        const td = document.createElement('td');
+        td.textContent = val;
+        tr.appendChild(td);
+      });
+      // Type tag with styled span
+      const typeTd = document.createElement('td');
+      const typeSpan = document.createElement('span');
+      typeSpan.className = 'type-tag';
+      typeSpan.textContent = p.type;
+      typeTd.appendChild(typeSpan);
+      tr.appendChild(typeTd);
+      // Impact
+      const impactTd = document.createElement('td');
+      impactTd.textContent = p.impact || '—';
+      tr.appendChild(impactTd);
       tbody.appendChild(tr);
     });
   }
