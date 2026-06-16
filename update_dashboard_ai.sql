@@ -1,0 +1,43 @@
+-- ============================================================
+-- geohamilton.com career dashboard — bring AI/ML up to date
+-- Run in the Supabase SQL editor for project: owgzrwfdmtiaenbumyzo
+-- (RLS blocks anon writes, so this must run as the project owner.)
+-- Idempotent: safe to re-run. No project/product names used.
+-- ============================================================
+
+-- 1) SKILLS — rebuild the AI/ML cluster with real depth -------
+delete from resume_skills where category = 'AI/ML';
+insert into resume_skills (skill, years, category, sort_order) values
+  ('LLM Serving / Inference',  2, 'AI/ML', 15),
+  ('RAG / pgvector Memory',    2, 'AI/ML', 16),
+  ('Agentic Orchestration',    2, 'AI/ML', 17),
+  ('Generative AI / Diffusion',2, 'AI/ML', 18),
+  ('GPU Infra / Self-Hosting', 2, 'AI/ML', 19),
+  ('Claude Code',              2, 'AI/ML', 20);
+
+-- 2) WORK BREAKDOWN (donut) — give AI/ML real weight ----------
+update resume_categories set percentage = 25 where category = 'Cloud Infrastructure';
+update resume_categories set percentage = 25 where category = 'BI / Analytics';
+update resume_categories set percentage = 15 where category = 'Data Engineering';
+update resume_categories set percentage = 10 where category = 'Security / IAM';
+update resume_categories set percentage = 25 where category = 'AI / ML';
+-- (sum = 100)
+
+-- 3) PROJECT HISTORY — add the self-directed AI builds ---------
+-- Type 'AI/ML' so the donut's AI / ML slice filters to these.
+delete from resume_projects where client = 'Self-directed';
+insert into resume_projects (project, client, role, year_start, year_end, type, impact) values
+  ('Self-Hosted Multi-Modal AI Platform',  'Self-directed', 'Founder & AI Engineer', 2024, null, 'AI/ML', '70B LLM · RAG memory · image/video gen'),
+  ('Distributed Agentic AI Infrastructure', 'Self-directed', 'Founder & AI Engineer', 2024, null, 'AI/ML', 'Go multi-agent · encrypted · sovereign'),
+  ('Generative-AI Marketplace Platform',    'Self-directed', 'Founder & AI Engineer', 2025, null, 'AI/ML', 'Shared codebase · gen-AI assets'),
+  ('LLM Analytics Assistant',               'Self-directed', 'AI Engineer',           2025, null, 'AI/ML', 'LLM over third-party platform APIs');
+
+-- 4) METRIC CARDS — add an AI headline stat -------------------
+delete from resume_stats where label = 'Self-Hosted AI Systems';
+insert into resume_stats (label, value, sort_order) values
+  ('Self-Hosted AI Systems', '4', 9);
+
+-- Verify ------------------------------------------------------
+-- select * from resume_skills where category = 'AI/ML' order by sort_order;
+-- select * from resume_projects where type = 'AI/ML';
+-- select * from resume_categories order by id;
