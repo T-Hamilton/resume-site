@@ -45,6 +45,7 @@ const SECTIONS = [
     ],
     accent: '#44ffdd',
     link: '/dashboard.html',
+    chart: true,
   },
   {
     title: 'GEO HAMILTON',
@@ -56,7 +57,6 @@ const SECTIONS = [
       '13+ yrs Fortune 100 cloud & data —',
       'now architecting & self-hosting',
       'production AI systems end-to-end.',
-      'Maui, HI · Miami · Remote',
     ],
     accent: '#5588ff',
   },
@@ -96,10 +96,25 @@ const SECTIONS = [
     accent: '#ff6644',
   },
   {
+    title: 'FEATURED BUILD',
+    body: [
+      'Relay — Support & Ops Console',
+      '',
+      'Full-stack demo in this exact stack:',
+      'Next.js + Redux · RTK Query · Thunk · Saga',
+      'Django REST core + FastAPI async edge',
+      '',
+      'Click to open the live demo  ▶',
+      'Code: github.com/T-Hamilton/relay',
+    ],
+    accent: '#43c59e',
+    link: 'https://relay-demo-47l.pages.dev',
+  },
+  {
     title: 'CHARTER & DATAFACT Z',
     body: [
       'Solutions Partner & Cloud Architect',
-      'Oct 2021 – Present · Maui, FL, Remote',
+      'Oct 2021 – Present',
       '',
       'Led MSTR → PowerBI migration for',
       'Fortune 100 client, team of 12.',
@@ -413,7 +428,12 @@ function buildTitleCanvas(photo) {
   // Subtitle
   ctx.font = '300 70px system-ui, -apple-system, sans-serif';
   ctx.fillStyle = '#7777aa';
-  ctx.fillText('an interactive resum\u00e9', 600, 620);
+  ctx.fillText('an interactive resume', 600, 620);
+
+  // Teaser \u2014 points to the live demo builds further down the helix
+  ctx.font = '500 48px system-ui, -apple-system, sans-serif';
+  ctx.fillStyle = '#6aa6ff';
+  ctx.fillText('interactive demo builds below  \u2193', 600, 700);
 
   const tex = new THREE.CanvasTexture(cvs);
   tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -592,15 +612,31 @@ function makeTexture(section) {
   } else {
     const bodyH = section.body.length * 40;
     const areaTop = 110;
-    const areaBot = section.link ? 320 : H - 20;
+    const areaBot = section.chart ? 320 : H - 20;
     const bodyY = areaTop + (areaBot - areaTop - bodyH) / 2 + 40;
     section.body.forEach((line, i) => {
-      ctx.fillText(line, W / 2, bodyY + i * 40);
+      const y = bodyY + i * 40;
+      // Clickable cue lines (ending in ▶) render as a blue hyperlink.
+      if (line.includes('▶')) {
+        ctx.save();
+        ctx.fillStyle = '#6aa6ff';
+        ctx.fillText(line, W / 2, y);
+        const w = ctx.measureText(line).width;
+        ctx.strokeStyle = '#6aa6ff';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(W / 2 - w / 2, y + 14);
+        ctx.lineTo(W / 2 + w / 2, y + 14);
+        ctx.stroke();
+        ctx.restore();
+      } else {
+        ctx.fillText(line, W / 2, y);
+      }
     });
   }
 
   // Mini chart preview for dashboard screen
-  if (section.link) {
+  if (section.chart) {
     const chartX = 80, chartW = W - 160, chartY = 340, chartH = 200;
     const bars = [
       { label: 'Cloud', val: 13, color: '#5588ff' },
@@ -713,7 +749,12 @@ window.addEventListener('click', (e) => {
   if (hits.length > 0) {
     const idx = screens.findIndex(s => s.mesh === hits[0].object);
     if (idx >= 0 && SECTIONS[idx].link) {
-      window.location.href = SECTIONS[idx].link;
+      const target = SECTIONS[idx].link;
+      if (target.startsWith('http')) {
+        window.open(target, '_blank', 'noopener');
+      } else {
+        window.location.href = target;
+      }
     }
   }
 });

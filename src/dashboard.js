@@ -251,6 +251,64 @@ async function init() {
     },
   });
 
+  // ── Impact / current focus (AI an order of magnitude above the rest) ──
+  const IMPACT = [
+    { label: 'AI / ML',        value: 100, color: '#ff6644' },
+    { label: 'Cloud',          value: 12,  color: '#5588ff' },
+    { label: 'Data Eng',       value: 10,  color: '#44ddaa' },
+    { label: 'BI / Analytics', value: 8,   color: '#aa66ff' },
+    { label: 'Security',       value: 6,   color: '#ff44aa' },
+  ];
+  const impactCtx = document.getElementById('impactChart').getContext('2d');
+  new Chart(impactCtx, {
+    type: 'bar',
+    data: {
+      labels: IMPACT.map(d => d.label),
+      datasets: [{
+        data: IMPACT.map(d => d.value),
+        backgroundColor: IMPACT.map(d => d.color + '66'),
+        borderColor: IMPACT.map(d => d.color),
+        borderWidth: 1,
+        borderRadius: 4,
+        maxBarThickness: 36,
+      }],
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 1200, easing: 'easeOutCubic' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(6, 6, 14, 0.95)',
+          borderColor: 'rgba(85, 136, 255, 0.3)',
+          borderWidth: 1,
+          titleColor: '#ffffff',
+          bodyColor: '#bbbbc8',
+          cornerRadius: 8,
+          padding: 12,
+          callbacks: { label: (ctx) => ` ${ctx.raw} relative impact` },
+        },
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(85, 136, 255, 0.06)' },
+          ticks: { color: '#667788' },
+          title: { display: true, text: 'Relative impact', color: '#667788' },
+        },
+        y: {
+          grid: { display: false },
+          ticks: {
+            // Highlight the AI / ML label so it pops
+            color: (c) => (c.index === 0 ? '#ff6644' : '#bbbbc8'),
+            font: (c) => ({ size: c.index === 0 ? 16 : 13, weight: c.index === 0 ? '700' : '400' }),
+          },
+        },
+      },
+    },
+  });
+
   // ── Sortable table ──
   const tbody = document.querySelector('#projects-table tbody');
   let sortCol = 'year_start';

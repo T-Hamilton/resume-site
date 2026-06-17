@@ -108,6 +108,17 @@ header h1 {
   color: #667788;
 }
 
+/* Impact (current focus) — full-width hero row */
+#impact-section {
+  padding: 0 32px 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.impact-canvas-wrap {
+  position: relative;
+  height: 300px;
+}
+
 /* Charts row */
 #charts {
   display: grid;
