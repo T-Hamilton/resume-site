@@ -31,23 +31,26 @@ branch** unless you pass `--branch`. The Pages project's **production branch is
 So if you deploy from `lab-portal` and geohamilton.com doesn't change, that's
 correct: you got a preview. Use the preview link to test.
 
+### Credentials
+The Cloudflare API token + account ID live in **`.env.deploy`** (gitignored,
+never committed). `source` it once per shell. (Or run `npx wrangler login` and
+skip it.) If `.env.deploy` is missing on your machine, ask the repo owner for the
+token or create one at dash.cloudflare.com/profile/api-tokens (scope: Pages → Edit).
+
 ## Deploy to PRODUCTION (geohamilton.com)
 Be on `main`, or force it explicitly with `--branch main`:
 ```bash
+source .env.deploy
 npm run build
-CLOUDFLARE_API_TOKEN="<your-token>" \
-CLOUDFLARE_ACCOUNT_ID="7f7fe6bca3a118cb321026c961390aa8" \
-  npx wrangler pages deploy dist --project-name resume-site --branch main --commit-dirty=true
-# (token via env, NOT committed. Or run `npx wrangler login` once and drop the env var.)
+npx wrangler pages deploy dist --project-name resume-site --branch main --commit-dirty=true
 ```
 
 ## Deploy a PREVIEW (feature branch, e.g. lab-portal)
 Test WIP at a unique URL without touching production:
 ```bash
+source .env.deploy
 npm run build
-CLOUDFLARE_API_TOKEN="<your-token>" \
-CLOUDFLARE_ACCOUNT_ID="7f7fe6bca3a118cb321026c961390aa8" \
-  npx wrangler pages deploy dist --project-name resume-site --branch lab-portal --commit-dirty=true
+npx wrangler pages deploy dist --project-name resume-site --branch lab-portal --commit-dirty=true
 ```
 Cloudflare returns a preview URL like `lab-portal.resume-site-3rj.pages.dev`.
 
