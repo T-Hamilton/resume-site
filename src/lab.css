@@ -51,7 +51,9 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
 #chunk-select{background:var(--panel2);color:#dde;border:1px solid var(--line2);border-radius:7px;padding:6px 10px;font-family:var(--mono);font-size:12px}
 #run-chunk{background:rgba(85,136,255,.16);color:#fff;border:1px solid var(--line2);border-radius:7px;padding:7px 14px;font-size:11px;letter-spacing:1px;cursor:pointer;transition:.2s;white-space:nowrap}
 #run-chunk:hover{background:rgba(85,136,255,.32);box-shadow:0 0 14px rgba(85,136,255,.25)}
-#run-chunk:disabled{opacity:.5;cursor:default;box-shadow:none}
+#run-chunk:disabled,#run-all:disabled{opacity:.5;cursor:default;box-shadow:none}
+#runner .ghost{background:rgba(85,136,255,.07);border:1px solid var(--line);color:var(--mut)}
+#runner .ghost:hover{background:rgba(85,136,255,.18);color:#fff;box-shadow:none}
 #run-progress{flex:1;min-width:90px;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
 #run-bar{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--green));transition:width .25s}
 #run-label{font-family:var(--mono);font-size:11px;color:var(--mut);min-width:84px;text-align:right}

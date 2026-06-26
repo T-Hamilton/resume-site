@@ -122,6 +122,40 @@ $('#run-chunk').onclick = async () => {
   pollJob();
 };
 
+/* full-corpus run (every chunk) */
+$('#run-all').onclick = async () => {
+  if (!confirm('Run the FULL pipeline over all chunks (~every document)? This can take several minutes.')) return;
+  $('#run-all').disabled = true; $('#run-chunk').disabled = true;
+  const r = await j('/pipeline/run-all', { method: 'POST' });
+  if (r.error) { $('#run-label').textContent = r.error; $('#run-all').disabled = false; $('#run-chunk').disabled = false; return; }
+  pollAll();
+};
+async function pollAll() {
+  const s = await j('/pipeline/run-all/status');
+  const pct = s.total ? Math.round((s.processed / s.total) * 100) : 0;
+  $('#run-bar').style.width = pct + '%';
+  $('#run-label').textContent = `full run · ch ${s.chunk}/${(s.chunks_total || 1) - 1} · ${s.processed}/${s.total} · ${s.saved} saved`;
+  const cp = $('#chunk-status'); cp.className = 'pill ' + (s.running ? 'run' : 'ok');
+  cp.textContent = s.running ? `full run ${pct}%` : `corpus done · ${s.processed}`;
+  refreshDash();
+  if (s.running) setTimeout(pollAll, 1500);
+  else { $('#run-all').disabled = false; $('#run-chunk').disabled = false; refreshDash(); refreshFindings(); }
+}
+
+/* CSV export — one row per document, duplicates included */
+$('#export-csv').onclick = async () => {
+  $('#export-csv').textContent = '↓ …';
+  try {
+    const res = await fetch(API + '/export/findings.csv');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = el('a', { href: url, download: 'cancel_reasons.csv' });
+    document.body.append(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  } catch (e) { alert('export failed: ' + e); }
+  $('#export-csv').innerHTML = '&#x2193; EXPORT CSV';
+};
+
 async function pollJob() {
   const s = await j('/pipeline/status');
   const pct = s.total ? Math.round((s.i / s.total) * 100) : 0;
