@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cancel-Sort // lab — Geo Hamilton</title>
+  <link rel="stylesheet" href="/src/lab.css" />
+</head>
+<body>
+  <div id="particles"></div>
+
+  <div id="lab">
+    <header id="topbar">
+      <a href="/" class="back">&#x25C0; Resum&#xE9;</a>
+      <div class="brand">CANCEL-SORT <span>// lab</span></div>
+      <div class="sub">heterogeneous-document reason extraction &middot; self-hosted Qwen2.5-7B</div>
+      <div class="status">
+        <span id="llm-status" class="pill">backend &hellip;</span>
+        <span id="chunk-status" class="pill">chunk &ndash;/&ndash;</span>
+      </div>
+    </header>
+
+    <main id="panes">
+      <!-- LEFT: tool palette -->
+      <aside id="tools-pane">
+        <div class="pane-h">TOOLS</div>
+        <div id="tool-list"></div>
+      </aside>
+
+      <!-- CENTER: chunk runner + chat -->
+      <section id="center-pane">
+        <div id="runner">
+          <select id="chunk-select" title="pick a chunk"></select>
+          <button id="run-chunk">&#x25B6; APPLY CHUNK</button>
+          <div id="run-progress"><div id="run-bar"></div></div>
+          <span id="run-label"></span>
+        </div>
+        <div id="chat-log">
+          <div class="sys-line">agent ready &mdash; ask it to sort, search, or explain. tools fire as discrete steps.</div>
+        </div>
+        <form id="chat-form" autocomplete="off">
+          <input id="chat-input" placeholder="ask the agent&hellip;  e.g.  find the credit-reporting complaints" />
+          <button type="submit">SEND</button>
+        </form>
+      </section>
+
+      <!-- RIGHT: discovery dashboard / evidence -->
+      <section id="right-pane">
+        <div id="tabs">
+          <button class="tab active" data-tab="dash">DISCOVERY</button>
+          <button class="tab" data-tab="evidence">EVIDENCE</button>
+        </div>
+
+        <div id="tab-dash" class="tabpane">
+          <div id="stat-band"></div>
+          <div class="panel">
+            <h4>REASON BREAKDOWN <span class="note" id="noise-note"></span></h4>
+            <canvas id="reasonChart" height="150"></canvas>
+          </div>
+          <div class="panel">
+            <h4>REASON &times; SOURCE</h4>
+            <div id="crosstab"></div>
+          </div>
+          <div class="panel discovery">
+            <h4>DISCOVERY &mdash; CANDIDATE THEMES</h4>
+            <div class="hint" id="themes-hint"></div>
+            <div id="themes"></div>
+          </div>
+        </div>
+
+        <div id="tab-evidence" class="tabpane hidden">
+          <input id="find-search" placeholder="search verbatim quotes&hellip;" />
+          <div id="findings"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- tool run modal -->
+  <div id="modal" class="hidden">
+    <div id="modal-box">
+      <div id="modal-h"></div>
+      <div id="modal-desc"></div>
+      <form id="modal-form"></form>
+      <pre id="modal-out"></pre>
+      <div id="modal-actions">
+        <button id="modal-run">RUN</button>
+        <button id="modal-close" type="button">close</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/lab.js"></script>
+</body>
+</html>
