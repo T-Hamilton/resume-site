@@ -43,7 +43,7 @@ const SECTIONS = [
       '',
       'Click to explore  \u25B6',
     ],
-    accent: '#ffb000',
+    accent: '#00ffcc',
     link: '/dashboard.html',
     chart: true,
   },
@@ -107,7 +107,7 @@ const SECTIONS = [
       'Click to open the live demo  ▶',
       'Code: github.com/T-Hamilton/relay',
     ],
-    accent: '#ffb000',
+    accent: '#43ffb2',
     link: 'https://relay-demo-47l.pages.dev',
   },
   {
@@ -237,11 +237,8 @@ function drawGlyphRow(ctx, r) {
     ctx.shadowBlur = 12;
   } else {
     const fade = 1 - r / STREAM_ROWS;
-    const amber = Math.random() < 0.05; // rogue amber glyph in the rain
-    ctx.fillStyle = amber
-      ? `rgba(255, 176, 0, ${(0.25 + 0.75 * fade).toFixed(3)})`
-      : `rgba(0, 255, 136, ${(0.15 + 0.85 * fade).toFixed(3)})`;
-    ctx.shadowColor = amber ? '#ffb000' : '#00ff88';
+    ctx.fillStyle = `rgba(0, 255, 136, ${(0.15 + 0.85 * fade).toFixed(3)})`;
+    ctx.shadowColor = '#00ff88';
     ctx.shadowBlur = 8 * fade;
   }
   ctx.fillText(ch, GLYPH_PX / 2, r * GLYPH_PX + GLYPH_PX / 2);
@@ -439,7 +436,7 @@ function buildTitleCanvas(photo) {
 
   // Teaser \u2014 points to the live demo builds further down the helix
   ctx.font = '500 42px ui-monospace, Menlo, monospace';
-  ctx.fillStyle = '#ffb347';
+  ctx.fillStyle = '#66ffaa';
   ctx.fillText('interactive demo builds below  \u2193', 600, 700);
 
   const tex = new THREE.CanvasTexture(cvs);
@@ -626,10 +623,10 @@ function makeTexture(section) {
       // Clickable cue lines (ending in ▶) render as a blue hyperlink.
       if (line.includes('▶')) {
         ctx.save();
-        ctx.fillStyle = '#ffb347';
+        ctx.fillStyle = '#66ffaa';
         ctx.fillText(line, W / 2, y);
         const w = ctx.measureText(line).width;
-        ctx.strokeStyle = '#ffb347';
+        ctx.strokeStyle = '#66ffaa';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.moveTo(W / 2 - w / 2, y + 14);
@@ -651,7 +648,7 @@ function makeTexture(section) {
       { label: 'Python', val: 13, color: '#00cc66' },
       { label: 'BI', val: 10, color: '#66ffcc' },
       { label: 'Security', val: 8, color: '#00ffcc' },
-      { label: 'AI/ML', val: 2, color: '#ffb000' },
+      { label: 'AI/ML', val: 2, color: '#aaffdd' },
     ];
     const maxVal = 13;
     const gap = 12;
@@ -967,10 +964,9 @@ for (let i = 0; i < ORB_COUNT; i++) {
   const gtex = new THREE.CanvasTexture(gcvs);
   gtex.minFilter = THREE.LinearFilter;
   gtex.generateMipmaps = false;
-  const amberRune = Math.random() < 0.2;
   const glyph = new THREE.Sprite(new THREE.SpriteMaterial({
     map: gtex,
-    color: amberRune ? 0xd99e20 : 0x35d98d,
+    color: 0x35d98d,
     transparent: true,
     opacity: 0.95,
     blending: THREE.AdditiveBlending,
