@@ -976,7 +976,7 @@ for (let i = 0; i < ORB_COUNT; i++) {
   glyph.scale.setScalar(coreR * 2.1);
   glyph.renderOrder = 2; // draw after the core — the rune is the light source
   group.add(glyph);
-  orbGlyphs.push({ ctx: gctx, tex: gtex, nextSwap: Math.random() * 2 });
+  orbGlyphs.push({ ctx: gctx, tex: gtex, nextSwap: Math.random() * 0.4 });
 
   // Scatter across the full scene height (title zone + spine zone)
   const fullHeight = TOTAL_HEIGHT + TITLE_HEIGHT;
@@ -1385,7 +1385,7 @@ function animate() {
     if (time > g.nextSwap) {
       drawOrbGlyph(g.ctx);
       g.tex.needsUpdate = true;
-      g.nextSwap = time + 0.8 + Math.random() * 2.2;
+      g.nextSwap = time + 0.12 + Math.random() * 0.25;
     }
   });
 
