@@ -878,7 +878,7 @@ const particles = buildParticles();
 scene.add(particles);
 
 /* ═══════════════════════════════════════════════════════
-   ORBS — Floating spheres with atmospheric glow shells
+   ORBS — Floating points of light with soft gradient halos
    ═══════════════════════════════════════════════════════ */
 
 const orbs = [];
@@ -889,54 +889,56 @@ const orbColors = [
   0xaaffdd, 0x00ffcc, 0x118855, 0xd8ffe8,
 ];
 
+// Shared radial-gradient halo texture — smooth falloff, no shell banding
+const glowTex = (() => {
+  const s = 128;
+  const cvs = document.createElement('canvas');
+  cvs.width = cvs.height = s;
+  const ctx = cvs.getContext('2d');
+  const g = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+  g.addColorStop(0.0,  'rgba(255,255,255,0.85)');
+  g.addColorStop(0.25, 'rgba(255,255,255,0.35)');
+  g.addColorStop(0.6,  'rgba(255,255,255,0.08)');
+  g.addColorStop(1.0,  'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, s, s);
+  return new THREE.CanvasTexture(cvs);
+})();
+
+function makeHalo(color, scale, opacity) {
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: glowTex,
+    color,
+    transparent: true,
+    opacity,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    fog: false,
+  }));
+  halo.scale.setScalar(scale);
+  return halo;
+}
+
 for (let i = 0; i < ORB_COUNT; i++) {
   const group = new THREE.Group();
 
   const color = orbColors[i % orbColors.length];
   const coreR = 0.08 + Math.random() * 0.14;
 
-  // Solid core
+  // Bright core — whitened toward the center like a real light source
   const core = new THREE.Mesh(
     new THREE.SphereGeometry(coreR, 32, 24),
-    new THREE.MeshStandardMaterial({
-      color,
-      emissive: color,
-      emissiveIntensity: 1.5,
-      metalness: 0.4,
-      roughness: 0.2,
+    new THREE.MeshBasicMaterial({
+      color: new THREE.Color(color).lerp(new THREE.Color(0xffffff), 0.45),
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      fog: false,
     })
   );
   group.add(core);
 
-  // Inner atmosphere
-  const atmo1 = new THREE.Mesh(
-    new THREE.SphereGeometry(coreR * 2.0, 32, 24),
-    new THREE.MeshStandardMaterial({
-      color,
-      emissive: color,
-      emissiveIntensity: 0.6,
-      transparent: true,
-      opacity: 0.15,
-      side: THREE.BackSide,
-      depthWrite: false,
-    })
-  );
-  group.add(atmo1);
-
-  // Outer atmosphere
-  const atmo2 = new THREE.Mesh(
-    new THREE.SphereGeometry(coreR * 3.5, 32, 24),
-    new THREE.MeshStandardMaterial({
-      color,
-      emissive: color,
-      emissiveIntensity: 0.3,
-      transparent: true,
-      opacity: 0.06,
-      side: THREE.BackSide,
-      depthWrite: false,
-    })
-  );
-  group.add(atmo2);
+  // Single soft halo replaces the old atmosphere shells
+  group.add(makeHalo(color, coreR * 8, 0.5));
 
   // Scatter across the full scene height (title zone + spine zone)
   const fullHeight = TOTAL_HEIGHT + TITLE_HEIGHT;
@@ -970,28 +972,16 @@ for (let i = 0; i < SMALL_ORB_COUNT; i++) {
 
   const core = new THREE.Mesh(
     new THREE.SphereGeometry(coreR, 16, 12),
-    new THREE.MeshStandardMaterial({
-      color,
-      emissive: color,
-      emissiveIntensity: 1.8,
+    new THREE.MeshBasicMaterial({
+      color: new THREE.Color(color).lerp(new THREE.Color(0xffffff), 0.5),
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      fog: false,
     })
   );
   group.add(core);
 
-  // Single soft atmosphere
-  const atmo = new THREE.Mesh(
-    new THREE.SphereGeometry(coreR * 2.8, 16, 12),
-    new THREE.MeshStandardMaterial({
-      color,
-      emissive: color,
-      emissiveIntensity: 0.5,
-      transparent: true,
-      opacity: 0.12,
-      side: THREE.BackSide,
-      depthWrite: false,
-    })
-  );
-  group.add(atmo);
+  group.add(makeHalo(color, coreR * 7, 0.45));
 
   const fullHeight = TOTAL_HEIGHT + TITLE_HEIGHT;
   const spread = 20;
