@@ -43,7 +43,7 @@ const SECTIONS = [
       '',
       'Click to explore  \u25B6',
     ],
-    accent: '#44ffdd',
+    accent: '#00ffcc',
     link: '/dashboard.html',
     chart: true,
   },
@@ -58,7 +58,7 @@ const SECTIONS = [
       'now architecting & self-hosting',
       'production AI systems end-to-end.',
     ],
-    accent: '#5588ff',
+    accent: '#00ff88',
   },
   {
     title: 'SKILLS',
@@ -74,7 +74,7 @@ const SECTIONS = [
       ['Python · Go · SQL · Java', '13 yrs'],
       ['Linux · Docker · SSO · IAM', '13 yrs'],
     ],
-    accent: '#44ddaa',
+    accent: '#4dffb0',
     grid: true,
   },
   {
@@ -93,7 +93,7 @@ const SECTIONS = [
       '',
       'Gen-AI marketplace · LLM analytics bot.',
     ],
-    accent: '#ff6644',
+    accent: '#00e87a',
   },
   {
     title: 'FEATURED BUILD',
@@ -107,7 +107,7 @@ const SECTIONS = [
       'Click to open the live demo  ▶',
       'Code: github.com/T-Hamilton/relay',
     ],
-    accent: '#43c59e',
+    accent: '#43ffb2',
     link: 'https://relay-demo-47l.pages.dev',
   },
   {
@@ -122,7 +122,7 @@ const SECTIONS = [
       '2 BI platforms deployed, 4000+ daily.',
       'Introduced AI-assisted dev workflows.',
     ],
-    accent: '#ffaa44',
+    accent: '#7dffcf',
   },
   {
     title: 'PWC LONDON / PANDERA',
@@ -135,7 +135,7 @@ const SECTIONS = [
       'GCP + Linux + MSTR admin.',
       'Python API scripts for auditing.',
     ],
-    accent: '#44aaff',
+    accent: '#00ffaa',
   },
   {
     title: 'EARLY CAREER',
@@ -153,7 +153,7 @@ const SECTIONS = [
       'Australia & PNG — cataract',
       'surgery for remote villages (2012)',
     ],
-    accent: '#ff44aa',
+    accent: '#a8ffd4',
   },
 ];
 
@@ -171,8 +171,8 @@ renderer.toneMappingExposure = 1.2;
 document.getElementById('app').appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x040408);
-scene.fog = new THREE.FogExp2(0x040408, 0.022);
+scene.background = new THREE.Color(0x010503);
+scene.fog = new THREE.FogExp2(0x010503, 0.022);
 
 const camera = new THREE.PerspectiveCamera(
   55, window.innerWidth / window.innerHeight, 0.1, 120
@@ -196,123 +196,114 @@ composer.addPass(new OutputPass());
    LIGHTING
    ═══════════════════════════════════════════════════════ */
 
-scene.add(new THREE.AmbientLight(0x1a1a2e, 0.6));
+scene.add(new THREE.AmbientLight(0x102418, 0.6));
 
-const keyLight = new THREE.PointLight(0x4488ff, 3, 50);
+const keyLight = new THREE.PointLight(0x00ff88, 2.2, 50);
 keyLight.position.set(8, 12, 8);
 scene.add(keyLight);
 
-const fillLight = new THREE.PointLight(0xff4488, 1.8, 40);
+const fillLight = new THREE.PointLight(0x0a5533, 1.8, 40);
 fillLight.position.set(-6, -8, -6);
 scene.add(fillLight);
 
-const rimLight = new THREE.PointLight(0x44ffaa, 1.2, 35);
+const rimLight = new THREE.PointLight(0x33ffcc, 1.2, 35);
 rimLight.position.set(0, 0, 10);
 scene.add(rimLight);
 
 /* ═══════════════════════════════════════════════════════
-   SPINE — Braided multi-strand light beam (data conduit)
+   SPINE — Matrix data-stream column
+   Falling glyph rain forming a vertical conduit of code
    ═══════════════════════════════════════════════════════ */
 
-/** Natural S-curve offset (sagittal plane) */
-function spineCurveZ(t) {
-  return Math.sin(t * Math.PI * 2) * 0.35;
+const MATRIX_GLYPHS =
+  'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホ0123456789<>=*+-:・¦'.split('');
+
+const STREAM_COUNT = 30;
+const STREAM_ROWS  = 24;   // glyphs per texture tile
+const GLYPH_PX     = 64;
+const matrixStreams = [];
+
+function drawGlyphRow(ctx, r) {
+  const ch = MATRIX_GLYPHS[(Math.random() * MATRIX_GLYPHS.length) | 0];
+  ctx.clearRect(0, r * GLYPH_PX, GLYPH_PX, GLYPH_PX);
+  ctx.save();
+  ctx.font = '700 46px ui-monospace, Menlo, monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  if (r === 0) {
+    // Stream head — near-white with a strong halo, catches the bloom pass
+    ctx.fillStyle = '#eaffef';
+    ctx.shadowColor = '#aaffcc';
+    ctx.shadowBlur = 12;
+  } else {
+    const fade = 1 - r / STREAM_ROWS;
+    ctx.fillStyle = `rgba(0, 255, 136, ${(0.15 + 0.85 * fade).toFixed(3)})`;
+    ctx.shadowColor = '#00ff88';
+    ctx.shadowBlur = 8 * fade;
+  }
+  ctx.fillText(ch, GLYPH_PX / 2, r * GLYPH_PX + GLYPH_PX / 2);
+  ctx.restore();
 }
 
-const STRAND_COLORS = [0x5588ff, 0x44ddaa, 0xff6644, 0xaa66ff, 0xffaa44, 0x44ffdd, 0xff44aa];
-const STRAND_COUNT  = STRAND_COLORS.length;
-const BRAID_TURNS   = 6;
-const BRAID_R       = 0.34;
-
-const strandCurves = [];
+function makeStreamTexture() {
+  const cvs = document.createElement('canvas');
+  cvs.width = GLYPH_PX;
+  cvs.height = GLYPH_PX * STREAM_ROWS;
+  const ctx = cvs.getContext('2d');
+  ctx.clearRect(0, 0, cvs.width, cvs.height);
+  for (let r = 0; r < STREAM_ROWS; r++) drawGlyphRow(ctx, r);
+  const tex = new THREE.CanvasTexture(cvs);
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  return { tex, ctx };
+}
 
 function buildSpine() {
   const group = new THREE.Group();
+  const H = TOTAL_HEIGHT + 6;
 
-  // Strands — each twists around the central axis, radius "breathing"
-  // along the way so the braid loosens and tightens organically
-  for (let s = 0; s < STRAND_COUNT; s++) {
-    const baseAngle = (s / STRAND_COUNT) * Math.PI * 2;
-    const pts = [];
-    for (let i = 0; i <= 160; i++) {
-      const t = i / 160;
-      const y = TOTAL_HEIGHT / 2 - t * TOTAL_HEIGHT;
-      const angle = baseAngle + t * BRAID_TURNS * Math.PI * 2;
-      const r = BRAID_R * (1 + 0.18 * Math.sin(t * Math.PI * 5 + s * 1.7));
-      pts.push(new THREE.Vector3(
-        r * Math.cos(angle),
-        y,
-        spineCurveZ(t) + r * Math.sin(angle)
-      ));
-    }
-    const curve = new THREE.CatmullRomCurve3(pts);
-    strandCurves.push(curve);
+  for (let i = 0; i < STREAM_COUNT; i++) {
+    const { tex, ctx } = makeStreamTexture();
+    const radius = 0.2 + Math.random() * 0.75;
+    const angle  = Math.random() * Math.PI * 2;
+    const planeW = 0.16 + Math.random() * 0.1;
+    tex.repeat.set(1, 1.2 + Math.random() * 1.8);
 
-    const color = new THREE.Color(STRAND_COLORS[s]);
-    const geo = new THREE.TubeGeometry(curve, 240, 0.022, 8, false);
-    const mat = new THREE.MeshStandardMaterial({
-      color: color.clone().multiplyScalar(0.35),
-      emissive: color,
-      emissiveIntensity: 1.1,
-      metalness: 0.2,
-      roughness: 0.35,
+    const mat = new THREE.MeshBasicMaterial({
+      map: tex,
       transparent: true,
-      opacity: 0.9,
+      opacity: 0.22 + Math.random() * 0.3,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      side: THREE.DoubleSide,
     });
-    group.add(new THREE.Mesh(geo, mat));
+
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(planeW, H), mat);
+    mesh.position.set(radius * Math.cos(angle), 0, radius * Math.sin(angle));
+    group.add(mesh);
+
+    matrixStreams.push({
+      mesh, tex, ctx,
+      speed: 0.08 + Math.random() * 0.18,
+      nextRetex: Math.random() * 0.5,
+    });
   }
 
-  // Soft energy core down the center of the braid
-  const corePts = [];
-  for (let i = 0; i <= 80; i++) {
-    const t = i / 80;
-    corePts.push(new THREE.Vector3(0, TOTAL_HEIGHT / 2 - t * TOTAL_HEIGHT, spineCurveZ(t)));
-  }
-  const coreCurve = new THREE.CatmullRomCurve3(corePts);
-  const coreGeo = new THREE.TubeGeometry(coreCurve, 120, 0.1, 16, false);
-  const coreMat = new THREE.MeshStandardMaterial({
-    color: 0x99bbff,
-    emissive: 0x5588ff,
-    emissiveIntensity: 0.7,
+  // Faint green core glow up the middle of the column
+  const coreMat = new THREE.MeshBasicMaterial({
+    color: 0x00ff88,
     transparent: true,
-    opacity: 0.22,
+    opacity: 0.1,
+    blending: THREE.AdditiveBlending,
     depthWrite: false,
   });
-  group.add(new THREE.Mesh(coreGeo, coreMat));
+  group.add(new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, H, 16), coreMat));
 
   return group;
 }
 
 const spine = buildSpine();
 scene.add(spine);
-
-// Data packets — bright pulses traveling up the strands
-const beamPulses = [];
-const PULSES_PER_STRAND = 2;
-
-strandCurves.forEach((curve, s) => {
-  for (let p = 0; p < PULSES_PER_STRAND; p++) {
-    const color = new THREE.Color(STRAND_COLORS[s]);
-    const mesh = new THREE.Mesh(
-      new THREE.SphereGeometry(0.055, 12, 10),
-      new THREE.MeshStandardMaterial({
-        color,
-        emissive: color,
-        emissiveIntensity: 3.5,
-        transparent: true,
-        opacity: 0.95,
-        depthWrite: false,
-      })
-    );
-    scene.add(mesh);
-    beamPulses.push({
-      mesh,
-      curve,
-      speed: 0.05 + Math.random() * 0.07,
-      offset: Math.random(),
-    });
-  }
-});
 
 /* ═══════════════════════════════════════════════════════
    HELIX RAIL — Glowing tube tracing the screen path
@@ -333,8 +324,8 @@ function buildHelixRail() {
   const curve = new THREE.CatmullRomCurve3(pts);
   const geo = new THREE.TubeGeometry(curve, 500, 0.015, 12, false);
   const mat = new THREE.MeshStandardMaterial({
-    color: 0x3355aa,
-    emissive: 0x112288,
+    color: 0x116644,
+    emissive: 0x008855,
     emissiveIntensity: 0.5,
     transparent: true,
     opacity: 0.3,
@@ -357,9 +348,9 @@ scene.add(titleGroup);
 const titleRing = new THREE.Mesh(
   new THREE.TorusGeometry(1.25, 0.045, 16, 120),
   new THREE.MeshStandardMaterial({
-    color: 0x5588ff,
-    emissive: 0x3366dd,
-    emissiveIntensity: 3.0,
+    color: 0x00ff88,
+    emissive: 0x00cc66,
+    emissiveIntensity: 1.5,
   })
 );
 titleRing.position.set(-5.26, 0, 0.1);
@@ -369,9 +360,9 @@ titleGroup.add(titleRing);
 const titleRing2 = new THREE.Mesh(
   new THREE.TorusGeometry(1.42, 0.02, 12, 120),
   new THREE.MeshStandardMaterial({
-    color: 0x44ddaa,
-    emissive: 0x22aa77,
-    emissiveIntensity: 2.25,
+    color: 0x66ffcc,
+    emissive: 0x22cc88,
+    emissiveIntensity: 1.1,
     transparent: true,
     opacity: 0.6,
   })
@@ -400,11 +391,10 @@ function buildTitleCanvas(photo) {
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, r + 14, 0, Math.PI * 2);
-    ctx.strokeStyle = '#5588ff';
+    ctx.strokeStyle = '#00ff88';
     ctx.lineWidth = 3;
-    ctx.shadowColor = '#5588ff';
-    ctx.shadowBlur = 45;
-    ctx.stroke();
+    ctx.shadowColor = '#00ff88';
+    ctx.shadowBlur = 22;
     ctx.stroke();
     ctx.restore();
 
@@ -423,9 +413,9 @@ function buildTitleCanvas(photo) {
 
   // "GEO HAMILTON"
   ctx.save();
-  ctx.font = '800 150px system-ui, -apple-system, sans-serif';
+  ctx.font = '800 130px ui-monospace, Menlo, monospace';
   ctx.fillStyle = '#ffffff';
-  ctx.shadowColor = '#5588ff';
+  ctx.shadowColor = '#00ff88';
   ctx.shadowBlur = 30;
   ctx.fillText('GEO', 600, 310);
   ctx.fillText('HAMILTON', 600, 490);
@@ -433,20 +423,20 @@ function buildTitleCanvas(photo) {
 
   // Accent line
   ctx.save();
-  ctx.fillStyle = '#5588ff';
-  ctx.shadowColor = '#5588ff';
+  ctx.fillStyle = '#00ff88';
+  ctx.shadowColor = '#00ff88';
   ctx.shadowBlur = 20;
   ctx.fillRect(600, 525, 700, 4);
   ctx.restore();
 
   // Subtitle
-  ctx.font = '300 70px system-ui, -apple-system, sans-serif';
-  ctx.fillStyle = '#7777aa';
+  ctx.font = '400 58px ui-monospace, Menlo, monospace';
+  ctx.fillStyle = '#5f9b7d';
   ctx.fillText('an interactive resume', 600, 620);
 
   // Teaser \u2014 points to the live demo builds further down the helix
-  ctx.font = '500 48px system-ui, -apple-system, sans-serif';
-  ctx.fillStyle = '#6aa6ff';
+  ctx.font = '500 42px ui-monospace, Menlo, monospace';
+  ctx.fillStyle = '#66ffaa';
   ctx.fillText('interactive demo builds below  \u2193', 600, 700);
 
   const tex = new THREE.CanvasTexture(cvs);
@@ -496,11 +486,11 @@ scene.add(bgGGroup);
   cvs.width = s; cvs.height = s;
   const ctx = cvs.getContext('2d');
   ctx.clearRect(0, 0, s, s);
-  ctx.font = '800 380px system-ui, -apple-system, sans-serif';
+  ctx.font = '800 380px ui-monospace, Menlo, monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = 'rgba(80, 130, 255, 0.3)';
-  ctx.shadowColor = '#5588ff';
+  ctx.fillStyle = 'rgba(0, 255, 136, 0.3)';
+  ctx.shadowColor = '#00ff88';
   ctx.shadowBlur = 35;
   ctx.fillText('G', s / 2, s / 2 + 10);
 
@@ -509,9 +499,9 @@ scene.add(bgGGroup);
     new THREE.PlaneGeometry(5, 5),
     new THREE.MeshStandardMaterial({
       map: tex,
-      emissive: 0x5588ff,
+      emissive: 0x00ff88,
       emissiveMap: tex,
-      emissiveIntensity: 0.8,
+      emissiveIntensity: 0.45,
       transparent: true,
       side: THREE.DoubleSide,
       depthWrite: false,
@@ -526,8 +516,8 @@ const BG_R = 2.2;
 const bgCircle = new THREE.Mesh(
   new THREE.TorusGeometry(BG_R, 0.035, 16, 120),
   new THREE.MeshStandardMaterial({
-    color: 0x5588ff,
-    emissive: 0x3366dd,
+    color: 0x00ff88,
+    emissive: 0x00cc66,
     emissiveIntensity: 1.5,
     transparent: true,
     opacity: 0.5,
@@ -538,8 +528,8 @@ bgGGroup.add(bgCircle);
 
 // Helix with a gap in the middle where the circle sits
 const bgHelixMat = new THREE.MeshStandardMaterial({
-  color: 0x4477cc,
-  emissive: 0x223399,
+  color: 0x11aa66,
+  emissive: 0x006633,
   emissiveIntensity: 0.8,
   transparent: true,
   opacity: 0.35,
@@ -596,7 +586,7 @@ function makeTexture(section) {
   ctx.restore();
 
   // Title
-  ctx.font = '700 50px system-ui, -apple-system, sans-serif';
+  ctx.font = '700 46px ui-monospace, Menlo, monospace';
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
   ctx.fillText(section.title, W / 2, 74);
@@ -607,7 +597,7 @@ function makeTexture(section) {
   ctx.fillRect((W - barW) / 2, 84, barW, 2.5);
 
   // Body
-  ctx.font = '300 26px system-ui, -apple-system, sans-serif';
+  ctx.font = '400 24px ui-monospace, Menlo, monospace';
   ctx.fillStyle = '#bbbbc8';
   if (section.grid) {
     const padL = 120, padR = 120;
@@ -633,10 +623,10 @@ function makeTexture(section) {
       // Clickable cue lines (ending in ▶) render as a blue hyperlink.
       if (line.includes('▶')) {
         ctx.save();
-        ctx.fillStyle = '#6aa6ff';
+        ctx.fillStyle = '#66ffaa';
         ctx.fillText(line, W / 2, y);
         const w = ctx.measureText(line).width;
-        ctx.strokeStyle = '#6aa6ff';
+        ctx.strokeStyle = '#66ffaa';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.moveTo(W / 2 - w / 2, y + 14);
@@ -653,19 +643,19 @@ function makeTexture(section) {
   if (section.chart) {
     const chartX = 80, chartW = W - 160, chartY = 340, chartH = 200;
     const bars = [
-      { label: 'Cloud', val: 13, color: '#5588ff' },
-      { label: 'Data', val: 13, color: '#44ddaa' },
-      { label: 'Python', val: 13, color: '#ffaa44' },
-      { label: 'BI', val: 10, color: '#aa66ff' },
-      { label: 'Security', val: 8, color: '#ff44aa' },
-      { label: 'AI/ML', val: 2, color: '#ff6644' },
+      { label: 'Cloud', val: 13, color: '#00ff88' },
+      { label: 'Data', val: 13, color: '#33ffaa' },
+      { label: 'Python', val: 13, color: '#00cc66' },
+      { label: 'BI', val: 10, color: '#66ffcc' },
+      { label: 'Security', val: 8, color: '#00ffcc' },
+      { label: 'AI/ML', val: 2, color: '#aaffdd' },
     ];
     const maxVal = 13;
     const gap = 12;
     const barWidth = (chartW - gap * (bars.length - 1)) / bars.length;
 
     // Faint grid lines
-    ctx.strokeStyle = 'rgba(85, 136, 255, 0.08)';
+    ctx.strokeStyle = 'rgba(0, 255, 136, 0.08)';
     ctx.lineWidth = 1;
     for (let i = 0; i <= 3; i++) {
       const gy = chartY + chartH - (i / 3) * chartH;
@@ -691,14 +681,14 @@ function makeTexture(section) {
       ctx.roundRect(bx, by, barWidth, bh, 3);
       ctx.stroke();
 
-      ctx.font = '300 14px system-ui, -apple-system, sans-serif';
-      ctx.fillStyle = '#667788';
+      ctx.font = '400 14px ui-monospace, Menlo, monospace';
+      ctx.fillStyle = '#4d7a63';
       ctx.textAlign = 'center';
       ctx.fillText(b.label, bx + barWidth / 2, chartY + chartH + 18);
     });
 
-    ctx.font = '300 14px system-ui, -apple-system, sans-serif';
-    ctx.fillStyle = '#44ddaa';
+    ctx.font = '400 14px ui-monospace, Menlo, monospace';
+    ctx.fillStyle = '#44ffaa';
     ctx.textAlign = 'center';
     ctx.fillText('LIVE FROM SUPABASE', W / 2, chartY + chartH + 50);
   }
@@ -778,10 +768,8 @@ window.addEventListener('click', (e) => {
    ═══════════════════════════════════════════════════════ */
 
 screens.forEach(({ angle, y }) => {
-  const t = (TOTAL_HEIGHT / 2 - y) / TOTAL_HEIGHT;
-  const z0 = spineCurveZ(t);
   const pts = [
-    new THREE.Vector3(0, y, z0),
+    new THREE.Vector3(0, y, 0),
     new THREE.Vector3(
       HELIX_RADIUS * 0.45 * Math.cos(angle),
       y,
@@ -796,8 +784,8 @@ screens.forEach(({ angle, y }) => {
   const curve = new THREE.CatmullRomCurve3(pts);
   const geo = new THREE.TubeGeometry(curve, 30, 0.01, 8, false);
   const mat = new THREE.MeshStandardMaterial({
-    color: 0x335588,
-    emissive: 0x112244,
+    color: 0x115533,
+    emissive: 0x003322,
     emissiveIntensity: 0.4,
     transparent: true,
     opacity: 0.25,
@@ -876,7 +864,7 @@ function buildParticles() {
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   const mat = new THREE.PointsMaterial({
-    color: 0x4466aa,
+    color: 0x22aa66,
     size: 0.035,
     transparent: true,
     opacity: 0.45,
@@ -897,8 +885,8 @@ const orbs = [];
 const ORB_COUNT = 18;
 
 const orbColors = [
-  0x4488ff, 0x44ddaa, 0xff6644, 0xaa66ff,
-  0xffaa44, 0x44aaff, 0xff44aa, 0x44ffdd,
+  0x00ff88, 0x33ffaa, 0x00cc66, 0x66ffcc,
+  0xaaffdd, 0x00ffcc, 0x118855, 0xd8ffe8,
 ];
 
 for (let i = 0; i < ORB_COUNT; i++) {
@@ -1088,7 +1076,7 @@ window.addEventListener('keydown', (e) => {
    ═══════════════════════════════════════════════════════ */
 
 const SPARK_MAX = 120;
-const sparkColors = [0x5588ff, 0x44ddaa, 0xff6644, 0xaa66ff, 0xffaa44, 0x44ffdd];
+const sparkColors = [0x00ff88, 0x33ffaa, 0x66ffcc, 0x00ffcc, 0xaaffdd, 0x00cc66];
 const sparkPool = [];
 const raycaster = new THREE.Raycaster();
 const mouseNDC = new THREE.Vector2();
@@ -1158,7 +1146,7 @@ function emitSpark(origin, dx, dy) {
       const tex = charTextures[Math.floor(Math.random() * charTextures.length)];
       mesh = new THREE.Mesh(codeGeo, new THREE.MeshStandardMaterial({
         map: tex,
-        emissive: 0x5588ff,
+        emissive: 0x00ff88,
         emissiveMap: tex,
         emissiveIntensity: 2.5,
         transparent: true,
@@ -1170,7 +1158,7 @@ function emitSpark(origin, dx, dy) {
       mesh = new THREE.Mesh(
         new THREE.SphereGeometry(0.04, 10, 8),
         new THREE.MeshStandardMaterial({
-          emissive: 0x5588ff,
+          emissive: 0x00ff88,
           emissiveIntensity: 2.5,
           transparent: true,
           opacity: 1,
@@ -1364,13 +1352,18 @@ function animate() {
     mesh.material.emissiveIntensity = base * pulse;
   });
 
-  // ── Beam pulses: data packets traveling up the strands ──
-  beamPulses.forEach((p, i) => {
-    const u = 1 - ((time * p.speed + p.offset) % 1);
-    p.mesh.position.copy(p.curve.getPointAt(u));
-    const flicker = 0.75 + 0.25 * Math.sin(time * 6 + i * 2.1);
-    p.mesh.material.emissiveIntensity = 3.5 * flicker;
-    p.mesh.scale.setScalar(0.8 + 0.4 * flicker);
+  // ── Matrix streams: rain scroll + glyph shimmer + billboard ──
+  matrixStreams.forEach((st) => {
+    st.tex.offset.y += st.speed * dt;
+    // Occasionally swap a couple of glyphs so the code "computes"
+    if (time > st.nextRetex) {
+      drawGlyphRow(st.ctx, (Math.random() * STREAM_ROWS) | 0);
+      drawGlyphRow(st.ctx, (Math.random() * STREAM_ROWS) | 0);
+      st.tex.needsUpdate = true;
+      st.nextRetex = time + 0.1 + Math.random() * 0.4;
+    }
+    // Face the camera so streams never vanish edge-on
+    st.mesh.lookAt(camera.position.x, st.mesh.position.y, camera.position.z);
   });
 
   // ── Orbiting lights ──
