@@ -239,6 +239,23 @@ function buildSpine() {
     roughness: 0.5,
   });
 
+  // Vertebral body — smooth lathe-turned solid with rounded rims and the
+  // slight concave waist of a real vertebral body
+  function makeVertebraGeo(w, h) {
+    const pts = [];
+    const N = 12;
+    for (let j = 0; j <= N; j++) {
+      const t = j / N;
+      const y = (t - 0.5) * h;
+      const edge = Math.sqrt(1 - Math.pow(2 * t - 1, 6)); // rounded top/bottom rims
+      const waist = 1 - 0.14 * Math.sin(t * Math.PI);      // concave middle
+      pts.push(new THREE.Vector2(Math.max(w * edge * waist, 0.0001), y));
+    }
+    const geo = new THREE.LatheGeometry(pts, 28);
+    geo.scale(1, 1, 0.7); // elliptical cross-section: wider than deep
+    return geo;
+  }
+
   for (let i = 0; i < SPINE_VERTS; i++) {
     const t = i / (SPINE_VERTS - 1);
     const y = TOTAL_HEIGHT / 2 - i * step;
@@ -246,13 +263,13 @@ function buildSpine() {
 
     // Vertebral body — wider in the lumbar region
     const w = 0.28 + Math.sin(t * Math.PI) * 0.1;
-    const bodyGeo = new THREE.BoxGeometry(w * 2, step * 0.42, w * 1.4);
+    const bodyGeo = makeVertebraGeo(w, step * 0.42);
     const body = new THREE.Mesh(bodyGeo, bodyMat);
     body.position.set(0, y, z);
     group.add(body);
 
     // Spinous process (posterior spike)
-    const procGeo = new THREE.ConeGeometry(0.055, 0.5, 4);
+    const procGeo = new THREE.ConeGeometry(0.055, 0.5, 12);
     const proc = new THREE.Mesh(procGeo, bodyMat);
     proc.position.set(0, y, z - w * 1.3);
     proc.rotation.x = Math.PI / 2;
@@ -260,7 +277,7 @@ function buildSpine() {
 
     // Transverse processes (lateral wings)
     for (const side of [-1, 1]) {
-      const tpGeo = new THREE.ConeGeometry(0.04, 0.35, 4);
+      const tpGeo = new THREE.ConeGeometry(0.04, 0.35, 12);
       const tp = new THREE.Mesh(tpGeo, bodyMat);
       tp.position.set(side * w * 1.1, y, z - w * 0.3);
       tp.rotation.z = side * Math.PI / 2;
@@ -270,7 +287,8 @@ function buildSpine() {
     // Intervertebral disc
     if (i < SPINE_VERTS - 1) {
       const nextZ = spineCurveZ((i + 1) / (SPINE_VERTS - 1));
-      const discGeo = new THREE.CylinderGeometry(w * 0.75, w * 0.75, step * 0.12, 8);
+      const discGeo = new THREE.CylinderGeometry(w * 0.75, w * 0.75, step * 0.12, 24);
+      discGeo.scale(1, 1, 0.7); // match the body's elliptical footprint
       const disc = new THREE.Mesh(discGeo, discMat);
       disc.position.set(0, y - step * 0.35, (z + nextZ) / 2);
       group.add(disc);
@@ -284,7 +302,7 @@ function buildSpine() {
     cordPts.push(new THREE.Vector3(0, TOTAL_HEIGHT / 2 - t * TOTAL_HEIGHT, spineCurveZ(t)));
   }
   const cordCurve = new THREE.CatmullRomCurve3(cordPts);
-  const cordGeo = new THREE.TubeGeometry(cordCurve, 120, 0.055, 8, false);
+  const cordGeo = new THREE.TubeGeometry(cordCurve, 120, 0.055, 16, false);
   const cordMat = new THREE.MeshStandardMaterial({
     color: 0x4488ff,
     emissive: 0x2255cc,
@@ -317,7 +335,7 @@ function buildHelixRail() {
     ));
   }
   const curve = new THREE.CatmullRomCurve3(pts);
-  const geo = new THREE.TubeGeometry(curve, 500, 0.015, 6, false);
+  const geo = new THREE.TubeGeometry(curve, 500, 0.015, 12, false);
   const mat = new THREE.MeshStandardMaterial({
     color: 0x3355aa,
     emissive: 0x112288,
@@ -546,7 +564,7 @@ function makeBgHelix(dir, turns, pitch) {
   }
   const curve = new THREE.CatmullRomCurve3(pts);
   return new THREE.Mesh(
-    new THREE.TubeGeometry(curve, 300, 0.03, 6, false),
+    new THREE.TubeGeometry(curve, 300, 0.03, 12, false),
     bgHelixMat
   );
 }
@@ -780,7 +798,7 @@ screens.forEach(({ angle, y }) => {
     ),
   ];
   const curve = new THREE.CatmullRomCurve3(pts);
-  const geo = new THREE.TubeGeometry(curve, 30, 0.01, 4, false);
+  const geo = new THREE.TubeGeometry(curve, 30, 0.01, 8, false);
   const mat = new THREE.MeshStandardMaterial({
     color: 0x335588,
     emissive: 0x112244,
@@ -821,7 +839,7 @@ for (let vi = 0; vi < VINE_COUNT; vi++) {
 
   const curve = new THREE.CatmullRomCurve3(pts);
   const thick = 0.015 + Math.random() * 0.015;
-  const geo = new THREE.TubeGeometry(curve, 50, thick, 5, false);
+  const geo = new THREE.TubeGeometry(curve, 50, thick, 8, false);
 
   const hue = 0.38 + Math.random() * 0.1;
   const color = new THREE.Color().setHSL(hue, 0.65, 0.35);
@@ -895,7 +913,7 @@ for (let i = 0; i < ORB_COUNT; i++) {
 
   // Solid core
   const core = new THREE.Mesh(
-    new THREE.SphereGeometry(coreR, 16, 16),
+    new THREE.SphereGeometry(coreR, 32, 24),
     new THREE.MeshStandardMaterial({
       color,
       emissive: color,
@@ -908,7 +926,7 @@ for (let i = 0; i < ORB_COUNT; i++) {
 
   // Inner atmosphere
   const atmo1 = new THREE.Mesh(
-    new THREE.SphereGeometry(coreR * 2.0, 20, 20),
+    new THREE.SphereGeometry(coreR * 2.0, 32, 24),
     new THREE.MeshStandardMaterial({
       color,
       emissive: color,
@@ -923,7 +941,7 @@ for (let i = 0; i < ORB_COUNT; i++) {
 
   // Outer atmosphere
   const atmo2 = new THREE.Mesh(
-    new THREE.SphereGeometry(coreR * 3.5, 20, 20),
+    new THREE.SphereGeometry(coreR * 3.5, 32, 24),
     new THREE.MeshStandardMaterial({
       color,
       emissive: color,
@@ -967,7 +985,7 @@ for (let i = 0; i < SMALL_ORB_COUNT; i++) {
   const coreR = 0.025 + Math.random() * 0.045;
 
   const core = new THREE.Mesh(
-    new THREE.SphereGeometry(coreR, 8, 8),
+    new THREE.SphereGeometry(coreR, 16, 12),
     new THREE.MeshStandardMaterial({
       color,
       emissive: color,
@@ -978,7 +996,7 @@ for (let i = 0; i < SMALL_ORB_COUNT; i++) {
 
   // Single soft atmosphere
   const atmo = new THREE.Mesh(
-    new THREE.SphereGeometry(coreR * 2.8, 10, 10),
+    new THREE.SphereGeometry(coreR * 2.8, 16, 12),
     new THREE.MeshStandardMaterial({
       color,
       emissive: color,
@@ -1154,7 +1172,7 @@ function emitSpark(origin, dx, dy) {
       }));
     } else {
       mesh = new THREE.Mesh(
-        new THREE.SphereGeometry(0.04, 6, 6),
+        new THREE.SphereGeometry(0.04, 10, 8),
         new THREE.MeshStandardMaterial({
           emissive: 0x5588ff,
           emissiveIntensity: 2.5,
