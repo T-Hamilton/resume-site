@@ -797,57 +797,48 @@ screens.forEach(({ angle, y }) => {
 });
 
 /* ═══════════════════════════════════════════════════════
-   VINES — Hanging tendrils in the mid-space (title → spine)
+   STREAMERS — Wavy ribbons of matrix text in the mid-space
+   (title → spine gap), anchored at the top, waving below
    ═══════════════════════════════════════════════════════ */
 
-const vineMeshes = [];
-const VINE_COUNT = 14;
-const VINE_MID_Y = TOTAL_HEIGHT / 2 + TITLE_HEIGHT * 0.45; // center of the gap
+const streamers = [];
+const STREAMER_COUNT = 14;
+const STREAMER_MID_Y = TOTAL_HEIGHT / 2 + TITLE_HEIGHT * 0.45; // center of the gap
 
-for (let vi = 0; vi < VINE_COUNT; vi++) {
-  const angle = (vi / VINE_COUNT) * Math.PI * 2 + Math.random() * 0.4;
+for (let vi = 0; vi < STREAMER_COUNT; vi++) {
+  const angle = (vi / STREAMER_COUNT) * Math.PI * 2 + Math.random() * 0.4;
   const radius = 2 + Math.random() * 5;
-  const anchorX = radius * Math.cos(angle);
-  const anchorZ = radius * Math.sin(angle);
-  const anchorY = VINE_MID_Y + (Math.random() - 0.3) * 6;
-  const length = 2 + Math.random() * 4;
-  const sway = (Math.random() - 0.5) * 1.5;
-  const depthSway = (Math.random() - 0.5) * 1.0;
+  const anchorY = STREAMER_MID_Y + (Math.random() - 0.3) * 6;
+  const len = 2.5 + Math.random() * 3.5;
+  const w = 0.16 + Math.random() * 0.08;
 
-  const pts = [];
-  for (let j = 0; j <= 8; j++) {
-    const t = j / 8;
-    pts.push(new THREE.Vector3(
-      anchorX + Math.sin(t * Math.PI * 1.5 + vi * 0.9) * sway * t,
-      anchorY - t * length,
-      anchorZ + Math.cos(t * Math.PI + vi * 0.6) * depthSway * t
-    ));
-  }
+  const { tex, ctx } = makeStreamTexture();
+  tex.repeat.set(1, len / 3.6); // glyphs ~0.15 world units tall
 
-  const curve = new THREE.CatmullRomCurve3(pts);
-  const thick = 0.015 + Math.random() * 0.015;
-  const geo = new THREE.TubeGeometry(curve, 50, thick, 8, false);
-
-  const hue = 0.38 + Math.random() * 0.1;
-  const color = new THREE.Color().setHSL(hue, 0.65, 0.35);
-  const emCol = new THREE.Color().setHSL(hue, 0.75, 0.22);
-
-  const mat = new THREE.MeshStandardMaterial({
-    color,
-    emissive: emCol,
-    emissiveIntensity: 0.8,
-    metalness: 0.15,
-    roughness: 0.55,
+  const mat = new THREE.MeshBasicMaterial({
+    map: tex,
     transparent: true,
     opacity: 0,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    side: THREE.DoubleSide,
   });
 
+  // Anchored at the top edge; height-segmented so it can wave
+  const geo = new THREE.PlaneGeometry(w, len, 1, 16);
+  geo.translate(0, -len / 2, 0);
   const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(radius * Math.cos(angle), anchorY, radius * Math.sin(angle));
   scene.add(mesh);
-  vineMeshes.push({
-    mesh,
+
+  streamers.push({
+    mesh, tex, ctx, len,
+    base: geo.attributes.position.array.slice(),
     phase: Math.random() * Math.PI * 2,
     shimmerSpeed: 1.5 + Math.random() * 2.5,
+    waveSpeed: 1.2 + Math.random() * 1.6,
+    scrollSpeed: 0.04 + Math.random() * 0.08,
+    nextRetex: Math.random(),
     anchorY,
   });
 }
@@ -1284,6 +1275,7 @@ spine.children.forEach((child) => {
 function animate() {
   requestAnimationFrame(animate);
   const time = performance.now() * 0.001;
+  const dt = clock.getDelta() || 0.016;
 
   // Soft snap: after scrolling stops, gently pull toward nearest screen
   const idleMs = performance.now() - lastScrollTime;
@@ -1334,14 +1326,35 @@ function animate() {
     s.mesh.material.opacity           = THREE.MathUtils.clamp(1.4 - d / 10, 0.25, 0.97);
   });
 
-  // ── Vine grow-in & shimmer ──
-  vineMeshes.forEach((v, vi) => {
-    const dist = Math.abs(camY - v.anchorY);
+  // ── Streamers: grow-in, wave, rain scroll, glyph shimmer ──
+  streamers.forEach((st, vi) => {
+    const dist = Math.abs(camY - st.anchorY);
     const prog = THREE.MathUtils.clamp(1 - (dist - 2) / 10, 0, 1);
     const stagger = vi * 0.05;
-    const t = THREE.MathUtils.clamp((prog - stagger) / (1 - stagger), 0, 1);
-    v.mesh.material.opacity = t * 0.7;
-    v.mesh.material.emissiveIntensity = 0.6 + Math.sin(time * v.shimmerSpeed + v.phase) * 0.5;
+    const g = THREE.MathUtils.clamp((prog - stagger) / (1 - stagger), 0, 1);
+    st.mesh.material.opacity = g * (0.55 + 0.25 * Math.sin(time * st.shimmerSpeed + st.phase));
+    if (g <= 0) return;
+
+    // Face the camera (Y-axis only), then wave sideways in local space
+    st.mesh.lookAt(camera.position.x, st.mesh.position.y, camera.position.z);
+
+    const pos = st.mesh.geometry.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      const bx = st.base[i * 3];
+      const by = st.base[i * 3 + 1];
+      const f = -by / st.len; // 0 at anchor → 1 at tip: top stays pinned
+      pos.setX(i, bx + Math.sin(by * 1.6 + time * st.waveSpeed + st.phase) * 0.35 * f);
+      pos.setZ(i, Math.cos(by * 1.1 + time * st.waveSpeed * 0.7 + st.phase) * 0.15 * f);
+    }
+    pos.needsUpdate = true;
+
+    // Slow rain scroll + occasional glyph mutation
+    st.tex.offset.y += st.scrollSpeed * dt;
+    if (time > st.nextRetex) {
+      drawGlyphRow(st.ctx, (Math.random() * STREAM_ROWS) | 0);
+      st.tex.needsUpdate = true;
+      st.nextRetex = time + 0.2 + Math.random() * 0.6;
+    }
   });
 
   // ── Orb drift ──
@@ -1353,7 +1366,6 @@ function animate() {
   });
 
   // ── Cursor sparks update ──
-  const dt = clock.getDelta() || 0.016;
   sparkPool.forEach((s) => {
     if (!s.alive) return;
     s.age += dt;
