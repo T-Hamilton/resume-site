@@ -562,51 +562,20 @@ bgGGroup.add(makeBgHelix(1, 3, 1.0));    // above: short
 bgGGroup.add(makeBgHelix(-1, 7, 2.0));   // below: extends 14.5 units down to the spine
 
 /* ═══════════════════════════════════════════════════════
-   DASHBOARD CARD DATA — same Supabase project the dashboard
-   page reads; snapshot fallback until the fetch lands
+   DASHBOARD CARD DATA — mirrors the dashboard page's
+   "Impact / current focus" chart (AI an order of magnitude
+   above the rest)
    ═══════════════════════════════════════════════════════ */
 
-const DASH_SHORT = {
-  'Cloud Infrastructure': 'Cloud',
-  'BI / Analytics': 'BI',
-  'Data Engineering': 'Data',
-  'Security / IAM': 'Security',
-  'AI / ML': 'AI/ML',
-};
-const DASH_GREENS = ['#33ffaa', '#00cc66', '#66ffcc', '#00ffcc', '#4dffb0'];
-
-let dashChart = {
-  live: false,
+const dashChart = {
   bars: [
-    { label: 'Cloud',    val: 30, color: '#33ffaa' },
-    { label: 'BI',       val: 35, color: '#00cc66' },
-    { label: 'Data',     val: 15, color: '#66ffcc' },
-    { label: 'Security', val: 10, color: '#00ffcc' },
-    { label: 'AI/ML',    val: 10, color: '#ffb000' },
+    { label: 'AI/ML',    val: 100, color: '#ffb000' },
+    { label: 'Cloud',    val: 12,  color: '#33ffaa' },
+    { label: 'Data',     val: 10,  color: '#00cc66' },
+    { label: 'BI',       val: 8,   color: '#66ffcc' },
+    { label: 'Security', val: 6,   color: '#00ffcc' },
   ],
 };
-
-async function loadDashChart() {
-  const KEY = 'sb_publishable_QyRLOovp0cNH1age1QTcuQ_yiMOXhnJ';
-  const res = await fetch(
-    'https://owgzrwfdmtiaenbumyzo.supabase.co/rest/v1/resume_categories?select=category,percentage',
-    { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } }
-  );
-  if (!res.ok) throw new Error(`supabase ${res.status}`);
-  const cats = await res.json();
-  if (!cats.length) throw new Error('no categories');
-  dashChart = {
-    live: true,
-    bars: cats.map((c, i) => {
-      const label = DASH_SHORT[c.category] || c.category;
-      return {
-        label,
-        val: c.percentage,
-        color: label === 'AI/ML' ? '#ffb000' : DASH_GREENS[i % DASH_GREENS.length],
-      };
-    }),
-  };
-}
 
 /* ═══════════════════════════════════════════════════════
    SCREEN TEXTURES — Canvas-rendered resume cards
@@ -689,8 +658,8 @@ function makeTexture(section) {
     });
   }
 
-  // Mini chart preview for dashboard screen — mirrors the live
-  // work-breakdown data behind /dashboard.html (see dashChart)
+  // Mini chart preview for dashboard screen — mirrors the
+  // impact/current-focus chart on /dashboard.html (see dashChart)
   if (section.chart) {
     const chartX = 80, chartW = W - 160, chartY = 340, chartH = 200;
     const bars = dashChart.bars;
@@ -730,16 +699,13 @@ function makeTexture(section) {
       ctx.textAlign = 'center';
       ctx.fillText(b.label, bx + barWidth / 2, chartY + chartH + 18);
       ctx.fillStyle = '#9fd8bb';
-      ctx.fillText(`${b.val}%`, bx + barWidth / 2, by - 8);
+      ctx.fillText(String(b.val), bx + barWidth / 2, by - 8);
     });
 
     ctx.font = '400 14px ui-monospace, Menlo, monospace';
     ctx.fillStyle = '#44ffaa';
     ctx.textAlign = 'center';
-    ctx.fillText(
-      dashChart.live ? 'WORK BREAKDOWN % · LIVE FROM SUPABASE' : 'WORK BREAKDOWN %',
-      W / 2, chartY + chartH + 50
-    );
+    ctx.fillText('RELATIVE IMPACT · CURRENT FOCUS', W / 2, chartY + chartH + 50);
   }
 
   const tex = new THREE.CanvasTexture(cvs);
@@ -787,19 +753,6 @@ SECTIONS.forEach((section, i) => {
   scene.add(mesh);
   screens.push({ mesh, angle, y, t, section });
 });
-
-// Redraw the dashboard card once live Supabase data arrives
-loadDashChart()
-  .then(() => {
-    const s = screens.find(sc => sc.section.chart);
-    if (!s) return;
-    const tex = makeTexture(s.section);
-    s.mesh.material.map?.dispose();
-    s.mesh.material.map = tex;
-    s.mesh.material.emissiveMap = tex;
-    s.mesh.material.needsUpdate = true;
-  })
-  .catch(() => { /* snapshot fallback already rendered */ });
 
 // Make dashboard screen clickable — raycast against mesh
 const clickRaycaster = new THREE.Raycaster();
