@@ -15,12 +15,13 @@ insert into resume_skills (skill, years, category, sort_order) values
   ('GPU Infra / Self-Hosting', 2, 'AI/ML', 19),
   ('Claude Code',              2, 'AI/ML', 20);
 
--- 2) WORK BREAKDOWN (donut) — give AI/ML real weight ----------
-update resume_categories set percentage = 25 where category = 'Cloud Infrastructure';
+-- 2) WORK BREAKDOWN (donut) — AI/ML is the LARGEST slice ------
+-- (current focus: the majority of new work is AI)
+update resume_categories set percentage = 20 where category = 'Cloud Infrastructure';
 update resume_categories set percentage = 25 where category = 'BI / Analytics';
 update resume_categories set percentage = 15 where category = 'Data Engineering';
 update resume_categories set percentage = 10 where category = 'Security / IAM';
-update resume_categories set percentage = 25 where category = 'AI / ML';
+update resume_categories set percentage = 30 where category = 'AI / ML';
 -- (sum = 100)
 
 -- 3) PROJECT HISTORY — add the self-directed AI builds ---------
