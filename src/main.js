@@ -797,8 +797,8 @@ screens.forEach(({ angle, y }) => {
 });
 
 /* ═══════════════════════════════════════════════════════
-   STREAMERS — Wavy ribbons of matrix text in the mid-space
-   (title → spine gap), anchored at the top, waving below
+   STREAMERS — Individual falling matrix lines in the
+   mid-space (title → spine gap), same look as the column
    ═══════════════════════════════════════════════════════ */
 
 const streamers = [];
@@ -809,7 +809,7 @@ for (let vi = 0; vi < STREAMER_COUNT; vi++) {
   const angle = (vi / STREAMER_COUNT) * Math.PI * 2 + Math.random() * 0.4;
   const radius = 2 + Math.random() * 5;
   const anchorY = STREAMER_MID_Y + (Math.random() - 0.3) * 6;
-  const len = 2.5 + Math.random() * 3.5;
+  const len = 3 + Math.random() * 4;
   const w = 0.16 + Math.random() * 0.08;
 
   const { tex, ctx } = makeStreamTexture();
@@ -824,20 +824,15 @@ for (let vi = 0; vi < STREAMER_COUNT; vi++) {
     side: THREE.DoubleSide,
   });
 
-  // Anchored at the top edge; height-segmented so it can wave
-  const geo = new THREE.PlaneGeometry(w, len, 1, 16);
-  geo.translate(0, -len / 2, 0);
-  const mesh = new THREE.Mesh(geo, mat);
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, len), mat);
   mesh.position.set(radius * Math.cos(angle), anchorY, radius * Math.sin(angle));
   scene.add(mesh);
 
   streamers.push({
-    mesh, tex, ctx, len,
-    base: geo.attributes.position.array.slice(),
+    mesh, tex, ctx,
     phase: Math.random() * Math.PI * 2,
     shimmerSpeed: 1.5 + Math.random() * 2.5,
-    waveSpeed: 1.2 + Math.random() * 1.6,
-    scrollSpeed: 0.04 + Math.random() * 0.08,
+    scrollSpeed: 0.08 + Math.random() * 0.18,   // same fall speed as the column
     nextRetex: Math.random(),
     anchorY,
   });
@@ -1326,7 +1321,7 @@ function animate() {
     s.mesh.material.opacity           = THREE.MathUtils.clamp(1.4 - d / 10, 0.25, 0.97);
   });
 
-  // ── Streamers: grow-in, wave, rain scroll, glyph shimmer ──
+  // ── Streamers: grow-in, rain scroll, glyph shimmer ──
   streamers.forEach((st, vi) => {
     const dist = Math.abs(camY - st.anchorY);
     const prog = THREE.MathUtils.clamp(1 - (dist - 2) / 10, 0, 1);
@@ -1335,20 +1330,10 @@ function animate() {
     st.mesh.material.opacity = g * (0.55 + 0.25 * Math.sin(time * st.shimmerSpeed + st.phase));
     if (g <= 0) return;
 
-    // Face the camera (Y-axis only), then wave sideways in local space
+    // Face the camera so the line reads from any orbit angle
     st.mesh.lookAt(camera.position.x, st.mesh.position.y, camera.position.z);
 
-    const pos = st.mesh.geometry.attributes.position;
-    for (let i = 0; i < pos.count; i++) {
-      const bx = st.base[i * 3];
-      const by = st.base[i * 3 + 1];
-      const f = -by / st.len; // 0 at anchor → 1 at tip: top stays pinned
-      pos.setX(i, bx + Math.sin(by * 1.6 + time * st.waveSpeed + st.phase) * 0.35 * f);
-      pos.setZ(i, Math.cos(by * 1.1 + time * st.waveSpeed * 0.7 + st.phase) * 0.15 * f);
-    }
-    pos.needsUpdate = true;
-
-    // Slow rain scroll + occasional glyph mutation
+    // Falling rain + occasional glyph mutation, same as the column
     st.tex.offset.y += st.scrollSpeed * dt;
     if (time > st.nextRetex) {
       drawGlyphRow(st.ctx, (Math.random() * STREAM_ROWS) | 0);
