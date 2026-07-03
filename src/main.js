@@ -58,7 +58,7 @@ const SECTIONS = [
       'now architecting & self-hosting',
       'production AI systems end-to-end.',
     ],
-    accent: '#00ff88',
+    accent: '#ffb000',
   },
   {
     title: 'SKILLS',
@@ -74,7 +74,7 @@ const SECTIONS = [
       ['Python · Go · SQL · Java', '13 yrs'],
       ['Linux · Docker · SSO · IAM', '13 yrs'],
     ],
-    accent: '#4dffb0',
+    accent: '#ffb000',
     grid: true,
   },
   {
@@ -93,7 +93,7 @@ const SECTIONS = [
       '',
       'Gen-AI marketplace · LLM analytics bot.',
     ],
-    accent: '#00e87a',
+    accent: '#ffb000',
   },
   {
     title: 'FEATURED BUILD',
@@ -122,7 +122,7 @@ const SECTIONS = [
       '2 BI platforms deployed, 4000+ daily.',
       'Introduced AI-assisted dev workflows.',
     ],
-    accent: '#7dffcf',
+    accent: '#ffb000',
   },
   {
     title: 'PWC LONDON / PANDERA',
@@ -135,7 +135,7 @@ const SECTIONS = [
       'GCP + Linux + MSTR admin.',
       'Python API scripts for auditing.',
     ],
-    accent: '#00ffaa',
+    accent: '#ffb000',
   },
   {
     title: 'EARLY CAREER',
@@ -153,7 +153,7 @@ const SECTIONS = [
       'Australia & PNG — cataract',
       'surgery for remote villages (2012)',
     ],
-    accent: '#a8ffd4',
+    accent: '#ffb000',
   },
 ];
 
@@ -439,7 +439,7 @@ function buildTitleCanvas(photo) {
 
   // Teaser \u2014 points to the live demo builds further down the helix
   ctx.font = '500 42px ui-monospace, Menlo, monospace';
-  ctx.fillStyle = '#ffb347';
+  ctx.fillStyle = '#66ffaa';
   ctx.fillText('interactive demo builds below  \u2193', 600, 700);
 
   const tex = new THREE.CanvasTexture(cvs);
