@@ -902,7 +902,10 @@ const glowTex = (() => {
   g.addColorStop(1.0,  'rgba(255,255,255,0)');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, s, s);
-  return new THREE.CanvasTexture(cvs);
+  const tex = new THREE.CanvasTexture(cvs);
+  tex.minFilter = THREE.LinearFilter;
+  tex.generateMipmaps = false;
+  return tex;
 })();
 
 function makeHalo(color, scale, opacity) {
@@ -919,17 +922,30 @@ function makeHalo(color, scale, opacity) {
   return halo;
 }
 
+// Matrix glyphs suspended inside the big orbs — swapped periodically
+const orbGlyphs = [];
+
+function drawOrbGlyph(ctx) {
+  const ch = MATRIX_GLYPHS[(Math.random() * MATRIX_GLYPHS.length) | 0];
+  ctx.clearRect(0, 0, 128, 128);
+  ctx.font = '700 88px ui-monospace, Menlo, monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(ch, 64, 68);
+}
+
 for (let i = 0; i < ORB_COUNT; i++) {
   const group = new THREE.Group();
 
   const color = orbColors[i % orbColors.length];
-  const coreR = 0.08 + Math.random() * 0.14;
+  const coreR = 0.16 + Math.random() * 0.18;
 
   // Bright core — whitened toward the center like a real light source
   const core = new THREE.Mesh(
-    new THREE.SphereGeometry(coreR, 32, 24),
+    new THREE.SphereGeometry(coreR * 0.45, 32, 24),
     new THREE.MeshBasicMaterial({
-      color: new THREE.Color(color).lerp(new THREE.Color(0xffffff), 0.45),
+      color: new THREE.Color(color).multiplyScalar(0.55),
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       fog: false,
@@ -938,7 +954,29 @@ for (let i = 0; i < ORB_COUNT; i++) {
   group.add(core);
 
   // Single soft halo replaces the old atmosphere shells
-  group.add(makeHalo(color, coreR * 8, 0.5));
+  group.add(makeHalo(color, coreR * 6, 0.4));
+
+  // Dark matrix glyph silhouetted in the core
+  const gcvs = document.createElement('canvas');
+  gcvs.width = gcvs.height = 128;
+  const gctx = gcvs.getContext('2d');
+  drawOrbGlyph(gctx);
+  const gtex = new THREE.CanvasTexture(gcvs);
+  gtex.minFilter = THREE.LinearFilter;
+  gtex.generateMipmaps = false;
+  const glyph = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: gtex,
+    color: 0x35d98d,
+    transparent: true,
+    opacity: 0.95,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    fog: false,
+  }));
+  glyph.scale.setScalar(coreR * 2.1);
+  glyph.renderOrder = 2; // draw after the core — the rune is the light source
+  group.add(glyph);
+  orbGlyphs.push({ ctx: gctx, tex: gtex, nextSwap: Math.random() * 2 });
 
   // Scatter across the full scene height (title zone + spine zone)
   const fullHeight = TOTAL_HEIGHT + TITLE_HEIGHT;
@@ -973,7 +1011,7 @@ for (let i = 0; i < SMALL_ORB_COUNT; i++) {
   const core = new THREE.Mesh(
     new THREE.SphereGeometry(coreR, 16, 12),
     new THREE.MeshBasicMaterial({
-      color: new THREE.Color(color).lerp(new THREE.Color(0xffffff), 0.5),
+      color: new THREE.Color(color).lerp(new THREE.Color(0xffffff), 0.3),
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       fog: false,
@@ -1340,6 +1378,15 @@ function animate() {
   const pulse = Math.sin(time * 1.5) * 0.15 + 1.0;
   spineEmissives.forEach(({ mesh, base }) => {
     mesh.material.emissiveIntensity = base * pulse;
+  });
+
+  // ── Orb glyphs: swap the suspended character now and then ──
+  orbGlyphs.forEach((g) => {
+    if (time > g.nextSwap) {
+      drawOrbGlyph(g.ctx);
+      g.tex.needsUpdate = true;
+      g.nextSwap = time + 0.8 + Math.random() * 2.2;
+    }
   });
 
   // ── Matrix streams: rain scroll + glyph shimmer + billboard ──
