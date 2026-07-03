@@ -211,7 +211,7 @@ rimLight.position.set(0, 0, 10);
 scene.add(rimLight);
 
 /* ═══════════════════════════════════════════════════════
-   SPINE — Stylized vertebrae with spinal cord
+   SPINE — Braided multi-strand light beam (data conduit)
    ═══════════════════════════════════════════════════════ */
 
 /** Natural S-curve offset (sagittal plane) */
@@ -219,104 +219,100 @@ function spineCurveZ(t) {
   return Math.sin(t * Math.PI * 2) * 0.35;
 }
 
+const STRAND_COLORS = [0x5588ff, 0x44ddaa, 0xff6644, 0xaa66ff, 0xffaa44, 0x44ffdd, 0xff44aa];
+const STRAND_COUNT  = STRAND_COLORS.length;
+const BRAID_TURNS   = 6;
+const BRAID_R       = 0.34;
+
+const strandCurves = [];
+
 function buildSpine() {
   const group = new THREE.Group();
-  const step = TOTAL_HEIGHT / SPINE_VERTS;
 
-  const bodyMat = new THREE.MeshStandardMaterial({
-    color: 0xaaaacc,
-    metalness: 0.85,
-    roughness: 0.15,
-    emissive: 0x334466,
-    emissiveIntensity: 0.6,
-  });
-
-  const discMat = new THREE.MeshStandardMaterial({
-    color: 0x4466aa,
-    emissive: 0x223366,
-    emissiveIntensity: 0.6,
-    metalness: 0.3,
-    roughness: 0.5,
-  });
-
-  // Vertebral body — smooth lathe-turned solid with rounded rims and the
-  // slight concave waist of a real vertebral body
-  function makeVertebraGeo(w, h) {
+  // Strands — each twists around the central axis, radius "breathing"
+  // along the way so the braid loosens and tightens organically
+  for (let s = 0; s < STRAND_COUNT; s++) {
+    const baseAngle = (s / STRAND_COUNT) * Math.PI * 2;
     const pts = [];
-    const N = 12;
-    for (let j = 0; j <= N; j++) {
-      const t = j / N;
-      const y = (t - 0.5) * h;
-      const edge = Math.sqrt(1 - Math.pow(2 * t - 1, 6)); // rounded top/bottom rims
-      const waist = 1 - 0.14 * Math.sin(t * Math.PI);      // concave middle
-      pts.push(new THREE.Vector2(Math.max(w * edge * waist, 0.0001), y));
+    for (let i = 0; i <= 160; i++) {
+      const t = i / 160;
+      const y = TOTAL_HEIGHT / 2 - t * TOTAL_HEIGHT;
+      const angle = baseAngle + t * BRAID_TURNS * Math.PI * 2;
+      const r = BRAID_R * (1 + 0.18 * Math.sin(t * Math.PI * 5 + s * 1.7));
+      pts.push(new THREE.Vector3(
+        r * Math.cos(angle),
+        y,
+        spineCurveZ(t) + r * Math.sin(angle)
+      ));
     }
-    const geo = new THREE.LatheGeometry(pts, 28);
-    geo.scale(1, 1, 0.7); // elliptical cross-section: wider than deep
-    return geo;
+    const curve = new THREE.CatmullRomCurve3(pts);
+    strandCurves.push(curve);
+
+    const color = new THREE.Color(STRAND_COLORS[s]);
+    const geo = new THREE.TubeGeometry(curve, 240, 0.022, 8, false);
+    const mat = new THREE.MeshStandardMaterial({
+      color: color.clone().multiplyScalar(0.35),
+      emissive: color,
+      emissiveIntensity: 1.1,
+      metalness: 0.2,
+      roughness: 0.35,
+      transparent: true,
+      opacity: 0.9,
+    });
+    group.add(new THREE.Mesh(geo, mat));
   }
 
-  for (let i = 0; i < SPINE_VERTS; i++) {
-    const t = i / (SPINE_VERTS - 1);
-    const y = TOTAL_HEIGHT / 2 - i * step;
-    const z = spineCurveZ(t);
-
-    // Vertebral body — wider in the lumbar region
-    const w = 0.28 + Math.sin(t * Math.PI) * 0.1;
-    const bodyGeo = makeVertebraGeo(w, step * 0.42);
-    const body = new THREE.Mesh(bodyGeo, bodyMat);
-    body.position.set(0, y, z);
-    group.add(body);
-
-    // Spinous process (posterior spike)
-    const procGeo = new THREE.ConeGeometry(0.055, 0.5, 12);
-    const proc = new THREE.Mesh(procGeo, bodyMat);
-    proc.position.set(0, y, z - w * 1.3);
-    proc.rotation.x = Math.PI / 2;
-    group.add(proc);
-
-    // Transverse processes (lateral wings)
-    for (const side of [-1, 1]) {
-      const tpGeo = new THREE.ConeGeometry(0.04, 0.35, 12);
-      const tp = new THREE.Mesh(tpGeo, bodyMat);
-      tp.position.set(side * w * 1.1, y, z - w * 0.3);
-      tp.rotation.z = side * Math.PI / 2;
-      group.add(tp);
-    }
-
-    // Intervertebral disc
-    if (i < SPINE_VERTS - 1) {
-      const nextZ = spineCurveZ((i + 1) / (SPINE_VERTS - 1));
-      const discGeo = new THREE.CylinderGeometry(w * 0.75, w * 0.75, step * 0.12, 24);
-      discGeo.scale(1, 1, 0.7); // match the body's elliptical footprint
-      const disc = new THREE.Mesh(discGeo, discMat);
-      disc.position.set(0, y - step * 0.35, (z + nextZ) / 2);
-      group.add(disc);
-    }
-  }
-
-  // Spinal cord — glowing tube through the canal
-  const cordPts = [];
+  // Soft energy core down the center of the braid
+  const corePts = [];
   for (let i = 0; i <= 80; i++) {
     const t = i / 80;
-    cordPts.push(new THREE.Vector3(0, TOTAL_HEIGHT / 2 - t * TOTAL_HEIGHT, spineCurveZ(t)));
+    corePts.push(new THREE.Vector3(0, TOTAL_HEIGHT / 2 - t * TOTAL_HEIGHT, spineCurveZ(t)));
   }
-  const cordCurve = new THREE.CatmullRomCurve3(cordPts);
-  const cordGeo = new THREE.TubeGeometry(cordCurve, 120, 0.055, 16, false);
-  const cordMat = new THREE.MeshStandardMaterial({
-    color: 0x4488ff,
-    emissive: 0x2255cc,
-    emissiveIntensity: 1.3,
+  const coreCurve = new THREE.CatmullRomCurve3(corePts);
+  const coreGeo = new THREE.TubeGeometry(coreCurve, 120, 0.1, 16, false);
+  const coreMat = new THREE.MeshStandardMaterial({
+    color: 0x99bbff,
+    emissive: 0x5588ff,
+    emissiveIntensity: 0.7,
     transparent: true,
-    opacity: 0.85,
+    opacity: 0.22,
+    depthWrite: false,
   });
-  group.add(new THREE.Mesh(cordGeo, cordMat));
+  group.add(new THREE.Mesh(coreGeo, coreMat));
 
   return group;
 }
 
 const spine = buildSpine();
 scene.add(spine);
+
+// Data packets — bright pulses traveling up the strands
+const beamPulses = [];
+const PULSES_PER_STRAND = 2;
+
+strandCurves.forEach((curve, s) => {
+  for (let p = 0; p < PULSES_PER_STRAND; p++) {
+    const color = new THREE.Color(STRAND_COLORS[s]);
+    const mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.055, 12, 10),
+      new THREE.MeshStandardMaterial({
+        color,
+        emissive: color,
+        emissiveIntensity: 3.5,
+        transparent: true,
+        opacity: 0.95,
+        depthWrite: false,
+      })
+    );
+    scene.add(mesh);
+    beamPulses.push({
+      mesh,
+      curve,
+      speed: 0.05 + Math.random() * 0.07,
+      offset: Math.random(),
+    });
+  }
+});
 
 /* ═══════════════════════════════════════════════════════
    HELIX RAIL — Glowing tube tracing the screen path
@@ -1366,6 +1362,15 @@ function animate() {
   const pulse = Math.sin(time * 1.5) * 0.15 + 1.0;
   spineEmissives.forEach(({ mesh, base }) => {
     mesh.material.emissiveIntensity = base * pulse;
+  });
+
+  // ── Beam pulses: data packets traveling up the strands ──
+  beamPulses.forEach((p, i) => {
+    const u = 1 - ((time * p.speed + p.offset) % 1);
+    p.mesh.position.copy(p.curve.getPointAt(u));
+    const flicker = 0.75 + 0.25 * Math.sin(time * 6 + i * 2.1);
+    p.mesh.material.emissiveIntensity = 3.5 * flicker;
+    p.mesh.scale.setScalar(0.8 + 0.4 * flicker);
   });
 
   // ── Orbiting lights ──
