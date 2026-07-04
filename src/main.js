@@ -658,54 +658,85 @@ function makeTexture(section) {
     });
   }
 
-  // Mini chart preview for dashboard screen — mirrors the
-  // impact/current-focus chart on /dashboard.html (see dashChart)
+  // Mini chart preview for dashboard screen — impact/current focus.
+  // Horizontal bars scaled to the runner-up; the AI bar breaks the
+  // chart frame ("off the chart") instead of crushing the others.
   if (section.chart) {
-    const chartX = 80, chartW = W - 160, chartY = 340, chartH = 200;
     const bars = dashChart.bars;
-    const maxVal = Math.max(...bars.map(b => b.val));
-    const gap = 12;
-    const barWidth = (chartW - gap * (bars.length - 1)) / bars.length;
+    const labelX = 210;                 // right edge of labels
+    const areaX = 230;                  // bars start
+    const areaW = W - areaX - 150;      // room for values on the right
+    const top = 336, rowH = 42;
+    const runnerUp = Math.max(...bars.filter(b => b.label !== 'AI/ML').map(b => b.val));
+    const scaleMax = runnerUp * 1.25;   // AI (100) blows past this
 
-    // Faint grid lines
-    ctx.strokeStyle = 'rgba(0, 255, 136, 0.08)';
+    // Chart frame the AI bar will escape from
+    const frameW = areaW * 0.82;
+    ctx.strokeStyle = 'rgba(0, 255, 136, 0.14)';
     ctx.lineWidth = 1;
-    for (let i = 0; i <= 3; i++) {
-      const gy = chartY + chartH - (i / 3) * chartH;
-      ctx.beginPath();
-      ctx.moveTo(chartX, gy);
-      ctx.lineTo(chartX + chartW, gy);
-      ctx.stroke();
-    }
+    ctx.strokeRect(areaX, top - 16, frameW, bars.length * rowH + 20);
 
     bars.forEach((b, i) => {
-      const bx = chartX + i * (barWidth + gap);
-      const bh = (b.val / maxVal) * (chartH - 20);
-      const by = chartY + chartH - bh;
+      const y = top + i * rowH;
+      const isAI = b.label === 'AI/ML';
+      const bh = isAI ? 24 : 16;
+      const bw = isAI ? areaW : frameW * (b.val / scaleMax);
 
-      ctx.fillStyle = b.color + '88';
-      ctx.beginPath();
-      ctx.roundRect(bx, by, barWidth, bh, 3);
-      ctx.fill();
+      // Label (left, right-aligned)
+      ctx.font = isAI
+        ? '700 20px ui-monospace, Menlo, monospace'
+        : '400 16px ui-monospace, Menlo, monospace';
+      ctx.fillStyle = isAI ? '#ffb347' : '#7aa88f';
+      ctx.textAlign = 'right';
+      ctx.fillText(b.label, labelX, y + bh / 2 + 6);
 
-      ctx.strokeStyle = b.color;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.roundRect(bx, by, barWidth, bh, 3);
-      ctx.stroke();
-
-      ctx.font = '400 14px ui-monospace, Menlo, monospace';
-      ctx.fillStyle = b.label === 'AI/ML' ? '#ffb347' : '#4d7a63';
-      ctx.textAlign = 'center';
-      ctx.fillText(b.label, bx + barWidth / 2, chartY + chartH + 18);
-      ctx.fillStyle = '#9fd8bb';
-      ctx.fillText(String(b.val), bx + barWidth / 2, by - 8);
+      // Bar
+      if (isAI) {
+        const grad = ctx.createLinearGradient(areaX, 0, areaX + bw, 0);
+        grad.addColorStop(0, '#8f6300');
+        grad.addColorStop(0.7, '#ffb000');
+        grad.addColorStop(1, '#ffe08a');
+        ctx.save();
+        ctx.shadowColor = '#ffb000';
+        ctx.shadowBlur = 22;
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.roundRect(areaX, y, bw, bh, 4);
+        ctx.fill();
+        ctx.restore();
+        // Breakout chevrons past the bar tip
+        ctx.fillStyle = '#ffe08a';
+        ctx.font = '700 20px ui-monospace, Menlo, monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText('▸▸', areaX + bw + 8, y + bh / 2 + 7);
+      } else {
+        ctx.fillStyle = b.color + '66';
+        ctx.beginPath();
+        ctx.roundRect(areaX, y, bw, bh, 3);
+        ctx.fill();
+        ctx.strokeStyle = b.color;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(areaX, y, bw, bh, 3);
+        ctx.stroke();
+        // Value at the bar tip
+        ctx.fillStyle = '#9fd8bb';
+        ctx.font = '400 15px ui-monospace, Menlo, monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(String(b.val), areaX + bw + 10, y + bh / 2 + 5);
+      }
     });
+
+    // AI value called out above its bar tip
+    ctx.font = '700 17px ui-monospace, Menlo, monospace';
+    ctx.fillStyle = '#ffe08a';
+    ctx.textAlign = 'right';
+    ctx.fillText('100 · OFF THE CHART', areaX + areaW, top - 24);
 
     ctx.font = '400 14px ui-monospace, Menlo, monospace';
     ctx.fillStyle = '#44ffaa';
     ctx.textAlign = 'center';
-    ctx.fillText('RELATIVE IMPACT · CURRENT FOCUS', W / 2, chartY + chartH + 50);
+    ctx.fillText('RELATIVE IMPACT · CURRENT FOCUS', W / 2, top + bars.length * rowH + 34);
   }
 
   const tex = new THREE.CanvasTexture(cvs);
