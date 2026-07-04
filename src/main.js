@@ -736,7 +736,7 @@ function makeTexture(section) {
     ctx.font = '400 14px ui-monospace, Menlo, monospace';
     ctx.fillStyle = '#44ffaa';
     ctx.textAlign = 'center';
-    ctx.fillText('RELATIVE IMPACT · CURRENT FOCUS', W / 2, top + bars.length * rowH + 34);
+    ctx.fillText('YEARS · RELATIVE IMPACT · CURRENT FOCUS', W / 2, top + bars.length * rowH + 34);
   }
 
   const tex = new THREE.CanvasTexture(cvs);
