@@ -11,7 +11,7 @@ insert into resume_skills (skill, years, category, sort_order) values
   ('LLM Serving / Inference',  2, 'AI/ML', 15),
   ('RAG / pgvector Memory',    2, 'AI/ML', 16),
   ('Agentic Orchestration',    2, 'AI/ML', 17),
-  ('Frontier-Scale Model Hosting / MoE', 2, 'AI/ML', 18),
+  ('284B MoE / 1M-Context Serving', 2, 'AI/ML', 18),
   ('GPU Infra / Self-Hosting', 2, 'AI/ML', 19),
   ('Claude Code',              2, 'AI/ML', 20);
 
@@ -28,7 +28,7 @@ update resume_categories set percentage = 30 where category = 'AI / ML';
 -- Type 'AI/ML' so the donut's AI / ML slice filters to these.
 delete from resume_projects where client = 'Self-directed';
 insert into resume_projects (project, client, role, year_start, year_end, type, impact) values
-  ('Frontier-Scale LLM Self-Hosting',      'Self-directed', 'Founder & AI Engineer', 2024, null, 'AI/ML', 'DeepSeek V4-class · quantization · GPU infra'),
+  ('Frontier-Scale LLM Self-Hosting',      'Self-directed', 'Founder & AI Engineer', 2024, null, 'AI/ML', '284B MoE · 13B active · 1M ctx · FP4/FP8'),
   ('Distributed Agentic AI Infrastructure', 'Self-directed', 'Founder & AI Engineer', 2024, null, 'AI/ML', 'Go multi-agent · encrypted · sovereign'),
   ('LLM Analytics Assistant',               'Self-directed', 'AI Engineer',           2025, null, 'AI/ML', 'LLM over third-party platform APIs'),
   ('Cancel-Sort Agentic Ops Console',       'Self-directed', 'AI Engineer',           2026, null, 'AI/ML', 'Tool-calling agent · self-hosted 7B · live lab');
