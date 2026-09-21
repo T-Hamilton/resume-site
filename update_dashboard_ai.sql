@@ -11,7 +11,7 @@ insert into resume_skills (skill, years, category, sort_order) values
   ('LLM Serving / Inference',  2, 'AI/ML', 15),
   ('RAG / pgvector Memory',    2, 'AI/ML', 16),
   ('Agentic Orchestration',    2, 'AI/ML', 17),
-  ('Generative AI / Diffusion',2, 'AI/ML', 18),
+  ('Frontier-Scale Model Hosting / MoE', 2, 'AI/ML', 18),
   ('GPU Infra / Self-Hosting', 2, 'AI/ML', 19),
   ('Claude Code',              2, 'AI/ML', 20);
 
@@ -28,10 +28,10 @@ update resume_categories set percentage = 30 where category = 'AI / ML';
 -- Type 'AI/ML' so the donut's AI / ML slice filters to these.
 delete from resume_projects where client = 'Self-directed';
 insert into resume_projects (project, client, role, year_start, year_end, type, impact) values
-  ('Self-Hosted Multi-Modal AI Platform',  'Self-directed', 'Founder & AI Engineer', 2024, null, 'AI/ML', '70B LLM · RAG memory · image/video gen'),
+  ('Frontier-Scale LLM Self-Hosting',      'Self-directed', 'Founder & AI Engineer', 2024, null, 'AI/ML', 'DeepSeek V4-class · quantization · GPU infra'),
   ('Distributed Agentic AI Infrastructure', 'Self-directed', 'Founder & AI Engineer', 2024, null, 'AI/ML', 'Go multi-agent · encrypted · sovereign'),
-  ('Generative-AI Marketplace Platform',    'Self-directed', 'Founder & AI Engineer', 2025, null, 'AI/ML', 'Shared codebase · gen-AI assets'),
-  ('LLM Analytics Assistant',               'Self-directed', 'AI Engineer',           2025, null, 'AI/ML', 'LLM over third-party platform APIs');
+  ('LLM Analytics Assistant',               'Self-directed', 'AI Engineer',           2025, null, 'AI/ML', 'LLM over third-party platform APIs'),
+  ('Cancel-Sort Agentic Ops Console',       'Self-directed', 'AI Engineer',           2026, null, 'AI/ML', 'Tool-calling agent · self-hosted 7B · live lab');
 
 -- 4) METRIC CARDS — add an AI headline stat -------------------
 delete from resume_stats where label = 'Self-Hosted AI Systems';
