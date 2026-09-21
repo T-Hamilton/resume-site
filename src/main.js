@@ -61,6 +61,22 @@ const SECTIONS = [
     accent: '#ffb000',
   },
   {
+    title: 'AGENTIC LAB',
+    body: [
+      'Cancel-Sort — Agentic Ops Console',
+      '',
+      'LLM chat input → tool-calling agent.',
+      'Tools fire as discrete, visible steps.',
+      'Self-hosted Qwen2.5-7B · zero APIs.',
+      'Run full pipeline · export CSV.',
+      '',
+      'Click to open the live lab  ▶',
+      'Code: github.com/T-Hamilton/cancel-sort',
+    ],
+    accent: '#ffb000',
+    link: '/lab.html',
+  },
+  {
     title: 'SKILLS',
     body: [
       ['LLM Serving · vLLM · llama.cpp', 'AI'],
