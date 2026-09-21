@@ -102,7 +102,7 @@ const SECTIONS = [
       'end-to-end — zero third-party APIs.',
       '',
       'Multi-modal AI platform: 70B LLM,',
-      'pgvector memory, image / video gen.',
+      'pgvector semantic memory.',
       '',
       'Distributed agentic AI: Go multi-agent,',
       'encrypted, sovereign, self-deploying.',
